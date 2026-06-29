@@ -1,65 +1,102 @@
 /* =========================================================
-  계산이 쉬워지는 우리 반 마켓
+  반짝반짝 우리 반 마켓 - JavaScript
   ---------------------------------------------------------
-  이 파일은 외부 라이브러리 없이 순수 JavaScript만 사용합니다.
+  이 파일은 구글 로그인용 공식 스크립트 외에는 외부 라이브러리를 쓰지 않습니다.
 
-  주요 기능
-  1. 학생이 상품을 장바구니에 담기
-  2. 단가 × 수량 계산 과정을 단계별로 보여 주기
-  3. 상품별 할인율과 쿠폰 할인율 적용하기
-  4. 교사가 상품 이름, 가격, 사진, 할인율을 수정하기
-  5. 수정한 상품 정보를 브라우저 저장소(localStorage)에 저장하기
+  들어 있는 기능:
+  1. 학생별 장바구니 저장
+  2. 단가 × 수량 계산 단계 시각화
+  3. 쿠폰 할인과 상품 할인 계산
+  4. 칭찬 별, 축하 애니메이션, 간단한 효과음
+  5. 교사용 상품 추가, 수정, 삭제
+  6. Google 로그인 연결 구조
 
-  주의
-  - 이 앱은 수업용 예시입니다.
-  - 교사용 PIN은 실제 보안 장치가 아니라 학생이 실수로 누르는 것을 줄이기 위한 간단한 장치입니다.
+  중요한 안내:
+  - 이 코드는 수업용 프론트엔드 예제입니다.
+  - 실제 학교 서비스에서는 Google ID 토큰을 서버에서 검증해야 합니다.
+  - 이 예제의 교사 권한 확인은 브라우저 안에서만 처리되므로 보안 기능으로 보면 안 됩니다.
 ========================================================= */
 
 
 /* =========================
-  1. 기본 설정
+  1. 구글 로그인과 앱 설정
 ========================= */
 
-// 교사용 관리 화면을 열 때 사용할 PIN입니다.
-// 필요하면 이 값을 다른 숫자로 바꾸세요.
-const TEACHER_PIN = "1234";
+/*
+  Google Cloud에서 발급받은 Web Client ID를 넣으세요.
 
-// 브라우저 저장소에 상품 목록을 저장할 때 사용할 이름입니다.
-const STORAGE_KEY = "classMarketProducts_v1";
+  예:
+  const GOOGLE_CLIENT_ID = "1234567890-abcde.apps.googleusercontent.com";
 
-// 현재 상품 목록입니다.
-// 처음에는 아래의 기본 상품을 사용하고,
-// 교사가 수정하면 localStorage에 저장된 상품을 불러옵니다.
-let products = [];
+  Client ID를 넣지 않아도 학생/교사 체험 버튼으로 앱을 볼 수 있습니다.
+*/
+const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
 
-// 장바구니 목록입니다.
-// 예: [{ productId: "apple", quantity: 2 }]
-let cart = [];
+/*
+  교사로 자동 인식할 Google 이메일 목록입니다.
+  실제 운영용 권한 관리는 서버에서 해야 합니다.
+*/
+const TEACHER_EMAILS = [
+  "teacher@example.com"
+];
 
-// 학생이 마지막으로 살펴본 상품입니다.
-// 계산 설명 화면에서 어떤 상품을 보여 줄지 정할 때 사용합니다.
-let selectedProductId = null;
+/*
+  Google 로그인을 쓰지 않고 교사용 체험을 열 때 사용하는 PIN입니다.
+  수업용 데모 장치일 뿐, 실제 보안 기능은 아닙니다.
+*/
+const DEMO_TEACHER_PIN = "1234";
 
-// 교사용 입력 폼에서 파일로 선택한 이미지를 잠시 보관합니다.
-let selectedImageData = "";
+/*
+  localStorage 키 앞에 붙일 이름입니다.
+  다른 앱의 저장 데이터와 섞이지 않게 해 줍니다.
+*/
+const APP_PREFIX = "shineClassMarket_v1";
 
 
 /* =========================
-  2. 화면 요소 찾기
+  2. 앱 상태
 ========================= */
+
+let currentUser = loadSessionUser();
+
+let products = loadProducts();
+
+let cart = loadCartForCurrentUser();
+
+let selectedProductId = null;
+
+let selectedImageData = "";
+
+let soundEnabled = loadSoundPreference();
+
+let stars = loadStarsForCurrentUser();
+
+
+/* =========================
+  3. 화면 요소 찾기
+========================= */
+
+const userNameText = document.getElementById("userNameText");
+const userRoleText = document.getElementById("userRoleText");
+const userBadge = document.getElementById("userBadge");
+
+const googleButtonArea = document.getElementById("googleButtonArea");
+const googleHelpText = document.getElementById("googleHelpText");
+
+const demoStudentBtn = document.getElementById("demoStudentBtn");
+const demoTeacherBtn = document.getElementById("demoTeacherBtn");
+const signOutBtn = document.getElementById("signOutBtn");
+
+const soundToggleBtn = document.getElementById("soundToggleBtn");
 
 const productGrid = document.getElementById("productGrid");
 const cartItems = document.getElementById("cartItems");
+const couponRate = document.getElementById("couponRate");
+const clearCartBtn = document.getElementById("clearCartBtn");
 const cartTotal = document.getElementById("cartTotal");
 const calcSteps = document.getElementById("calcSteps");
 
-const couponRate = document.getElementById("couponRate");
-const clearCartBtn = document.getElementById("clearCartBtn");
-
-const teacherLoginBtn = document.getElementById("teacherLoginBtn");
-const teacherLogoutBtn = document.getElementById("teacherLogoutBtn");
 const teacherPanel = document.getElementById("teacherPanel");
-
 const teacherForm = document.getElementById("teacherForm");
 const teacherFormTitle = document.getElementById("teacherFormTitle");
 const teacherProductList = document.getElementById("teacherProductList");
@@ -68,6 +105,7 @@ const editingProductId = document.getElementById("editingProductId");
 const productName = document.getElementById("productName");
 const productPrice = document.getElementById("productPrice");
 const productDiscount = document.getElementById("productDiscount");
+const productEmoji = document.getElementById("productEmoji");
 const productImageUrl = document.getElementById("productImageUrl");
 const productImageFile = document.getElementById("productImageFile");
 const imagePreview = document.getElementById("imagePreview");
@@ -75,25 +113,33 @@ const imagePreview = document.getElementById("imagePreview");
 const clearTeacherFormBtn = document.getElementById("clearTeacherFormBtn");
 const resetProductsBtn = document.getElementById("resetProductsBtn");
 
+const confettiLayer = document.getElementById("confettiLayer");
+const liveMessage = document.getElementById("liveMessage");
+
+const starText = document.getElementById("starText");
+const starFill = document.getElementById("starFill");
+
 
 /* =========================
-  3. 앱 시작
+  4. 앱 시작
 ========================= */
 
 document.addEventListener("DOMContentLoaded", () => {
-  products = loadProducts();
-
-  renderProducts();
-  renderCart();
-  renderCalculationSteps();
-  renderTeacherProducts();
-
   connectEvents();
+  renderAll();
+});
+
+/*
+  Google 스크립트는 async/defer로 로드됩니다.
+  그래서 window load 시점에 Google 객체가 있는지 확인합니다.
+*/
+window.addEventListener("load", () => {
+  initGoogleSignIn();
 });
 
 
 /* =========================
-  4. 기본 상품 만들기
+  5. 기본 상품
 ========================= */
 
 function getDefaultProducts() {
@@ -103,41 +149,66 @@ function getDefaultProducts() {
       name: "사과",
       price: 1200,
       discount: 0,
-      image: makeSvgImage("사과", "#ff6b6b", "#ffe3e3")
+      emoji: "🍎",
+      image: makeSvgImage("사과", "🍎", "#ff6b6b", "#ffe1e1")
+    },
+    {
+      id: "banana",
+      name: "바나나",
+      price: 900,
+      discount: 10,
+      emoji: "🍌",
+      image: makeSvgImage("바나나", "🍌", "#f9c74f", "#fff3bf")
     },
     {
       id: "pencil",
       name: "연필",
       price: 500,
-      discount: 10,
-      image: makeSvgImage("연필", "#f59e0b", "#fff7ed")
+      discount: 0,
+      emoji: "✏️",
+      image: makeSvgImage("연필", "✏️", "#4f7cff", "#e5edff")
     },
     {
       id: "notebook",
       name: "공책",
       price: 1800,
-      discount: 0,
-      image: makeSvgImage("공책", "#4f7cff", "#e0ecff")
+      discount: 20,
+      emoji: "📘",
+      image: makeSvgImage("공책", "📘", "#4361ee", "#e9edff")
     },
     {
       id: "juice",
       name: "주스",
       price: 1500,
-      discount: 20,
-      image: makeSvgImage("주스", "#22c55e", "#dcfce7")
+      discount: 5,
+      emoji: "🧃",
+      image: makeSvgImage("주스", "🧃", "#2a9d8f", "#dff8f3")
+    },
+    {
+      id: "cookie",
+      name: "쿠키",
+      price: 700,
+      discount: 0,
+      emoji: "🍪",
+      image: makeSvgImage("쿠키", "🍪", "#bc6c25", "#fff0dc")
     }
   ];
 }
 
-// 기본 상품에 사용할 간단한 그림을 SVG로 만듭니다.
-// 이렇게 하면 인터넷이 없어도 상품 사진이 화면에 나타납니다.
-function makeSvgImage(text, mainColor, bgColor) {
+/*
+  인터넷이 없어도 기본 상품 이미지가 보이도록 SVG 이미지를 직접 만듭니다.
+*/
+function makeSvgImage(label, emoji, mainColor, bgColor) {
+  const safeLabel = escapeHtml(label);
+  const safeEmoji = escapeHtml(emoji);
+
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
-      <rect width="600" height="400" fill="${bgColor}"/>
-      <circle cx="300" cy="170" r="82" fill="${mainColor}" opacity="0.95"/>
-      <circle cx="260" cy="145" r="18" fill="white" opacity="0.35"/>
-      <text x="300" y="320" font-size="58" font-family="Arial, sans-serif" text-anchor="middle" fill="#243044" font-weight="800">${text}</text>
+    <svg xmlns="http://www.w3.org/2000/svg" width="700" height="460" viewBox="0 0 700 460">
+      <rect width="700" height="460" rx="40" fill="${bgColor}"/>
+      <circle cx="350" cy="190" r="118" fill="${mainColor}" opacity="0.92"/>
+      <circle cx="305" cy="145" r="28" fill="white" opacity="0.35"/>
+      <text x="350" y="218" font-size="96" text-anchor="middle" dominant-baseline="middle">${safeEmoji}</text>
+      <text x="350" y="372" font-size="66" font-family="Arial, sans-serif" text-anchor="middle" fill="#172033" font-weight="900">${safeLabel}</text>
     </svg>
   `;
 
@@ -146,106 +217,320 @@ function makeSvgImage(text, mainColor, bgColor) {
 
 
 /* =========================
-  5. 저장소 다루기
-========================= */
-
-function loadProducts() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-
-  // 저장된 상품이 없으면 기본 상품을 사용합니다.
-  if (!saved) {
-    return getDefaultProducts();
-  }
-
-  try {
-    const parsed = JSON.parse(saved);
-
-    // 저장된 값이 배열이면 사용합니다.
-    if (Array.isArray(parsed)) {
-      return parsed;
-    }
-
-    // 혹시 저장된 값이 이상하면 기본 상품을 사용합니다.
-    return getDefaultProducts();
-  } catch (error) {
-    console.error("상품 정보를 불러오는 중 문제가 생겼습니다.", error);
-    return getDefaultProducts();
-  }
-}
-
-function saveProducts() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-}
-
-
-/* =========================
-  6. 이벤트 연결하기
+  6. 이벤트 연결
 ========================= */
 
 function connectEvents() {
-  // 학생이 상품 카드에서 버튼을 누를 때
+  demoStudentBtn.addEventListener("click", () => {
+    setCurrentUser({
+      id: "demo-student",
+      name: "학생 친구",
+      email: "",
+      picture: "",
+      role: "student",
+      loginType: "demo"
+    });
+
+    showPraise("학생 화면으로 들어왔어요. 같이 계산해 봐요!", "small");
+  });
+
+  demoTeacherBtn.addEventListener("click", () => {
+    const pin = window.prompt("교사용 체험 PIN을 입력해 주세요.");
+
+    if (pin !== DEMO_TEACHER_PIN) {
+      window.alert("PIN이 맞지 않아요.");
+      return;
+    }
+
+    setCurrentUser({
+      id: "demo-teacher",
+      name: "교사 체험",
+      email: "",
+      picture: "",
+      role: "teacher",
+      loginType: "demo"
+    });
+
+    showPraise("교사용 관리 화면이 열렸어요.", "small");
+  });
+
+  signOutBtn.addEventListener("click", () => {
+    signOut();
+  });
+
+  soundToggleBtn.addEventListener("click", () => {
+    soundEnabled = !soundEnabled;
+    saveSoundPreference();
+    renderSoundButton();
+
+    if (soundEnabled) {
+      playTone("success");
+      showLiveMessage("효과음이 켜졌어요.");
+    } else {
+      showLiveMessage("효과음이 꺼졌어요.");
+    }
+  });
+
   productGrid.addEventListener("click", handleProductGridClick);
 
-  // 장바구니에서 +, -, 삭제 버튼을 누를 때
   cartItems.addEventListener("click", handleCartClick);
 
-  // 쿠폰 할인율이 바뀌면 금액을 다시 계산합니다.
   couponRate.addEventListener("change", () => {
+    saveCartForCurrentUser();
     renderCart();
     renderCalculationSteps();
   });
 
-  // 장바구니 비우기
   clearCartBtn.addEventListener("click", () => {
     cart = [];
     selectedProductId = null;
+    saveCartForCurrentUser();
     renderCart();
     renderCalculationSteps();
+    showLiveMessage("장바구니를 비웠어요.");
   });
 
-  // 교사용 관리 열기
-  teacherLoginBtn.addEventListener("click", openTeacherPanel);
+  calcSteps.addEventListener("click", handleQuizClick);
 
-  // 교사용 관리 닫기
-  teacherLogoutBtn.addEventListener("click", closeTeacherPanel);
-
-  // 교사용 상품 저장
   teacherForm.addEventListener("submit", handleTeacherFormSubmit);
 
-  // 사진 파일 선택
   productImageFile.addEventListener("change", handleImageFileChange);
 
-  // 사진 URL 입력 시 미리보기
   productImageUrl.addEventListener("input", () => {
     selectedImageData = "";
     imagePreview.src = productImageUrl.value.trim();
   });
 
-  // 교사용 입력 칸 비우기
   clearTeacherFormBtn.addEventListener("click", resetTeacherForm);
 
-  // 기본 상품으로 되돌리기
   resetProductsBtn.addEventListener("click", resetProductsToDefault);
 
-  // 교사용 상품 목록에서 수정, 삭제 버튼 누르기
   teacherProductList.addEventListener("click", handleTeacherProductListClick);
 }
 
 
 /* =========================
-  7. 학생용 상품 화면 그리기
+  7. Google 로그인
+========================= */
+
+function initGoogleSignIn() {
+  const hasClientId =
+    GOOGLE_CLIENT_ID &&
+    !GOOGLE_CLIENT_ID.startsWith("YOUR_GOOGLE_CLIENT_ID");
+
+  if (!hasClientId) {
+    googleHelpText.textContent =
+      "Google Client ID가 아직 없습니다. 지금은 체험 버튼으로 사용할 수 있어요.";
+    return;
+  }
+
+  if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+    googleHelpText.textContent =
+      "Google 로그인 스크립트를 불러오지 못했어요. 인터넷 연결 또는 도메인 설정을 확인해 주세요.";
+    return;
+  }
+
+  window.google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredential,
+    auto_select: false
+  });
+
+  window.google.accounts.id.renderButton(googleButtonArea, {
+    theme: "outline",
+    size: "large",
+    type: "standard",
+    shape: "pill",
+    text: "signin_with",
+    logo_alignment: "left",
+    width: 300,
+    locale: "ko"
+  });
+
+  googleHelpText.textContent =
+    "구글로 들어오면 학생별 장바구니가 이 브라우저에 따로 저장돼요.";
+}
+
+function handleGoogleCredential(response) {
+  if (!response || !response.credential) {
+    window.alert("Google 로그인 정보를 받지 못했어요.");
+    return;
+  }
+
+  const payload = decodeJwtPayload(response.credential);
+
+  if (!payload || !payload.sub) {
+    window.alert("Google 로그인 정보를 읽지 못했어요.");
+    return;
+  }
+
+  const email = String(payload.email || "").toLowerCase();
+  const isTeacher = TEACHER_EMAILS.map((item) => item.toLowerCase()).includes(email);
+
+  setCurrentUser({
+    id: "google-" + payload.sub,
+    name: payload.name || "친구",
+    email,
+    picture: payload.picture || "",
+    role: isTeacher ? "teacher" : "student",
+    loginType: "google"
+  });
+
+  showPraise(`${payload.name || "친구"}님, 반가워요!`, "big");
+}
+
+/*
+  JWT의 payload 부분을 읽기 위한 간단한 함수입니다.
+  다시 강조하지만, 이것은 화면 표시와 데모용입니다.
+  실제 권한 확인은 서버에서 ID 토큰을 검증해야 합니다.
+*/
+function decodeJwtPayload(token) {
+  try {
+    const parts = token.split(".");
+
+    if (parts.length < 2) {
+      return null;
+    }
+
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const json = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((char) => {
+          return "%" + ("00" + char.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
+
+    return JSON.parse(json);
+  } catch (error) {
+    console.error("JWT를 읽는 중 문제가 생겼습니다.", error);
+    return null;
+  }
+}
+
+function signOut() {
+  if (window.google && window.google.accounts && window.google.accounts.id) {
+    window.google.accounts.id.disableAutoSelect();
+  }
+
+  removeStorage(getSessionKey());
+
+  setCurrentUser({
+    id: "demo-student",
+    name: "학생 친구",
+    email: "",
+    picture: "",
+    role: "student",
+    loginType: "demo"
+  });
+
+  showLiveMessage("로그아웃했어요. 학생 체험 화면으로 돌아왔어요.");
+}
+
+
+/* =========================
+  8. 사용자 전환
+========================= */
+
+function setCurrentUser(user) {
+  saveCartForCurrentUser();
+  saveStarsForCurrentUser();
+
+  currentUser = user;
+  saveSessionUser();
+
+  cart = loadCartForCurrentUser();
+  stars = loadStarsForCurrentUser();
+  selectedProductId = cart.length > 0 ? cart[0].productId : null;
+
+  renderAll();
+}
+
+function loadSessionUser() {
+  const saved = readJson(getSessionKey(), null);
+
+  if (saved && saved.id && saved.role) {
+    return saved;
+  }
+
+  return {
+    id: "demo-student",
+    name: "학생 친구",
+    email: "",
+    picture: "",
+    role: "student",
+    loginType: "demo"
+  };
+}
+
+function saveSessionUser() {
+  writeJson(getSessionKey(), currentUser);
+}
+
+
+/* =========================
+  9. 전체 화면 다시 그리기
+========================= */
+
+function renderAll() {
+  renderUser();
+  renderSoundButton();
+  renderProducts();
+  renderCart();
+  renderCalculationSteps();
+  renderStars();
+  renderTeacherPanel();
+  renderTeacherProducts();
+}
+
+function renderUser() {
+  userNameText.textContent = currentUser.name || "학생 친구";
+  userRoleText.textContent =
+    currentUser.role === "teacher" ? "교사 화면" : "학생 화면";
+
+  const avatar = userBadge.querySelector(".avatar");
+
+  if (currentUser.picture) {
+    avatar.innerHTML = `<img src="${escapeAttribute(currentUser.picture)}" alt="" />`;
+    avatar.classList.add("photo-avatar");
+  } else {
+    avatar.textContent = currentUser.role === "teacher" ? "👩‍🏫" : "🙂";
+    avatar.classList.remove("photo-avatar");
+  }
+
+  signOutBtn.classList.toggle("hidden", currentUser.loginType !== "google");
+}
+
+function renderSoundButton() {
+  soundToggleBtn.textContent = soundEnabled ? "🔊 효과음 켜짐" : "🔇 효과음 꺼짐";
+  soundToggleBtn.setAttribute("aria-pressed", String(soundEnabled));
+}
+
+function renderTeacherPanel() {
+  teacherPanel.classList.toggle("hidden", currentUser.role !== "teacher");
+}
+
+
+/* =========================
+  10. 상품 화면
 ========================= */
 
 function renderProducts() {
   productGrid.innerHTML = "";
 
   products.forEach((product) => {
+    const discountedPrice = getDiscountedUnitPrice(product);
+    const isSelected = product.id === selectedProductId;
+
     const card = document.createElement("article");
-    card.className = "product-card";
+    card.className = "product-card" + (isSelected ? " selected" : "");
 
     card.innerHTML = `
       <div class="product-image-wrap">
         <img src="${escapeAttribute(product.image)}" alt="${escapeAttribute(product.name)} 사진" />
+        <span class="product-emoji" aria-hidden="true">${escapeHtml(product.emoji || "🛒")}</span>
         ${
           product.discount > 0
             ? `<span class="discount-badge">${product.discount}% 할인</span>`
@@ -256,29 +541,38 @@ function renderProducts() {
       <div class="product-body">
         <h3>${escapeHtml(product.name)}</h3>
 
-        <div class="price-line">
-          <strong>${formatWon(product.price)}</strong>
+        <div class="price-box">
+          ${
+            product.discount > 0
+              ? `
+                <span class="old-price">원래 ${formatWon(product.price)}</span>
+                <strong>지금 ${formatWon(discountedPrice)}</strong>
+              `
+              : `<strong>${formatWon(product.price)}</strong>`
+          }
           <span>1개 가격</span>
         </div>
 
-        <div class="quantity-row">
-          <label for="qty-${product.id}">몇 개 살까요?</label>
-          <input
-            id="qty-${product.id}"
-            type="number"
-            min="1"
-            max="99"
-            value="1"
-            data-quantity-input="${product.id}"
-          />
+        <div class="quantity-control" aria-label="${escapeAttribute(product.name)} 수량 고르기">
+          <button class="round-button" type="button" data-qty-minus="${product.id}" aria-label="수량 줄이기">
+            −
+          </button>
+
+          <div class="quantity-display" id="qty-${product.id}" data-quantity="${product.id}">
+            1개
+          </div>
+
+          <button class="round-button" type="button" data-qty-plus="${product.id}" aria-label="수량 늘리기">
+            +
+          </button>
         </div>
 
         <div class="product-actions">
-          <button class="primary-button" data-add-product="${product.id}">
-            장바구니에 담기
+          <button class="primary-button" type="button" data-add-product="${product.id}">
+            🛒 담기
           </button>
-          <button class="small-button" data-practice-product="${product.id}">
-            계산 먼저 보기
+          <button class="soft-button" type="button" data-practice-product="${product.id}">
+            👀 계산 보기
           </button>
         </div>
       </div>
@@ -289,82 +583,118 @@ function renderProducts() {
 }
 
 function handleProductGridClick(event) {
+  const minusButton = event.target.closest("[data-qty-minus]");
+  const plusButton = event.target.closest("[data-qty-plus]");
   const addButton = event.target.closest("[data-add-product]");
   const practiceButton = event.target.closest("[data-practice-product]");
 
+  if (minusButton) {
+    changeProductCardQuantity(minusButton.dataset.qtyMinus, -1);
+    playTone("tap");
+    return;
+  }
+
+  if (plusButton) {
+    changeProductCardQuantity(plusButton.dataset.qtyPlus, 1);
+    playTone("tap");
+    return;
+  }
+
   if (addButton) {
     const productId = addButton.dataset.addProduct;
-    const quantity = getQuantityFromProductCard(productId);
+    const quantity = getProductCardQuantity(productId);
 
     addToCart(productId, quantity);
     selectedProductId = productId;
 
+    saveCartForCurrentUser();
+    renderProducts();
     renderCart();
     renderCalculationSteps();
+
+    addStars(1);
+    showPraise("좋아요! 장바구니에 담았어요.", "small");
+    playTone("add");
+    return;
   }
 
   if (practiceButton) {
-    const productId = practiceButton.dataset.practiceProduct;
-    selectedProductId = productId;
+    selectedProductId = practiceButton.dataset.practiceProduct;
 
+    renderProducts();
     renderCalculationSteps();
+
+    showLiveMessage("계산 과정을 보여 줄게요.");
+    playTone("tap");
   }
 }
 
-function getQuantityFromProductCard(productId) {
-  const quantityInput = document.querySelector(`[data-quantity-input="${productId}"]`);
-  const quantity = Number(quantityInput.value);
+function getProductCardQuantity(productId) {
+  const display = document.querySelector(`[data-quantity="${productId}"]`);
 
-  // 수량은 최소 1개입니다.
-  if (!Number.isFinite(quantity) || quantity < 1) {
-    quantityInput.value = 1;
+  if (!display) {
     return 1;
   }
 
-  return Math.floor(quantity);
+  const quantity = Number(display.dataset.value || "1");
+
+  if (!Number.isFinite(quantity) || quantity < 1) {
+    return 1;
+  }
+
+  return Math.min(99, Math.floor(quantity));
+}
+
+function changeProductCardQuantity(productId, amount) {
+  const display = document.querySelector(`[data-quantity="${productId}"]`);
+
+  if (!display) {
+    return;
+  }
+
+  const current = Number(display.dataset.value || "1");
+  const next = Math.max(1, Math.min(99, current + amount));
+
+  display.dataset.value = String(next);
+  display.textContent = `${next}개`;
 }
 
 
 /* =========================
-  8. 장바구니 기능
+  11. 장바구니
 ========================= */
 
 function addToCart(productId, quantity) {
-  const existingItem = cart.find((item) => item.productId === productId);
+  const existing = cart.find((item) => item.productId === productId);
 
-  // 이미 장바구니에 있는 물건이면 수량만 더합니다.
-  if (existingItem) {
-    existingItem.quantity += quantity;
-    return;
+  if (existing) {
+    existing.quantity += quantity;
+  } else {
+    cart.push({
+      productId,
+      quantity
+    });
   }
-
-  // 처음 담는 물건이면 새로 추가합니다.
-  cart.push({
-    productId,
-    quantity
-  });
 }
 
 function handleCartClick(event) {
-  const increaseButton = event.target.closest("[data-increase]");
-  const decreaseButton = event.target.closest("[data-decrease]");
-  const removeButton = event.target.closest("[data-remove]");
+  const minusButton = event.target.closest("[data-cart-minus]");
+  const plusButton = event.target.closest("[data-cart-plus]");
+  const removeButton = event.target.closest("[data-cart-remove]");
 
-  if (increaseButton) {
-    const productId = increaseButton.dataset.increase;
-    changeCartQuantity(productId, 1);
+  if (minusButton) {
+    changeCartQuantity(minusButton.dataset.cartMinus, -1);
   }
 
-  if (decreaseButton) {
-    const productId = decreaseButton.dataset.decrease;
-    changeCartQuantity(productId, -1);
+  if (plusButton) {
+    changeCartQuantity(plusButton.dataset.cartPlus, 1);
   }
 
   if (removeButton) {
-    const productId = removeButton.dataset.remove;
-    removeFromCart(productId);
+    removeFromCart(removeButton.dataset.cartRemove);
   }
 
+  saveCartForCurrentUser();
   renderCart();
   renderCalculationSteps();
 }
@@ -378,12 +708,13 @@ function changeCartQuantity(productId, amount) {
 
   item.quantity += amount;
 
-  // 수량이 0개 이하가 되면 장바구니에서 빼줍니다.
   if (item.quantity <= 0) {
     removeFromCart(productId);
   } else {
     selectedProductId = productId;
   }
+
+  playTone("tap");
 }
 
 function removeFromCart(productId) {
@@ -392,6 +723,8 @@ function removeFromCart(productId) {
   if (selectedProductId === productId) {
     selectedProductId = cart.length > 0 ? cart[0].productId : null;
   }
+
+  showLiveMessage("장바구니에서 뺐어요.");
 }
 
 function renderCart() {
@@ -400,9 +733,11 @@ function renderCart() {
   if (cart.length === 0) {
     cartItems.innerHTML = `
       <p class="empty-message">
-        아직 장바구니가 비어 있어요. 마음에 드는 물건을 담아 볼까요?
+        아직 비어 있어요.<br />
+        왼쪽에서 물건을 골라 담아 볼까요?
       </p>
     `;
+
     cartTotal.textContent = "0원";
     return;
   }
@@ -414,45 +749,52 @@ function renderCart() {
       return;
     }
 
-    const calculation = calculateItem(product, item.quantity);
+    const calc = calculateItem(product, item.quantity);
 
-    const itemElement = document.createElement("article");
-    itemElement.className = "cart-item";
+    const article = document.createElement("article");
+    article.className = "cart-item";
 
-    itemElement.innerHTML = `
+    article.innerHTML = `
       <img src="${escapeAttribute(product.image)}" alt="${escapeAttribute(product.name)} 사진" />
 
       <div>
-        <h4>${escapeHtml(product.name)}</h4>
+        <h3>${escapeHtml(product.emoji || "🛒")} ${escapeHtml(product.name)}</h3>
         <p>
           ${formatWon(product.price)} × ${item.quantity}개
           ${
             product.discount > 0
-              ? ` → ${product.discount}% 할인`
+              ? `, ${product.discount}% 할인`
               : ""
           }
         </p>
-        <p><strong>${formatWon(calculation.finalPrice)}</strong></p>
+        <p>
+          <strong>${formatWon(calc.finalPrice)}</strong>
+        </p>
 
         <div class="cart-controls">
-          <button class="round-control" data-decrease="${product.id}" aria-label="${escapeAttribute(product.name)} 수량 줄이기">−</button>
-          <button class="round-control" data-increase="${product.id}" aria-label="${escapeAttribute(product.name)} 수량 늘리기">+</button>
-          <button class="remove-button" data-remove="${product.id}">빼기</button>
+          <button class="round-button" type="button" data-cart-minus="${product.id}" aria-label="${escapeAttribute(product.name)} 수량 줄이기">−</button>
+          <button class="round-button" type="button" data-cart-plus="${product.id}" aria-label="${escapeAttribute(product.name)} 수량 늘리기">+</button>
+          <button class="remove-button" type="button" data-cart-remove="${product.id}">빼기</button>
         </div>
       </div>
     `;
 
-    cartItems.appendChild(itemElement);
+    cartItems.appendChild(article);
   });
 
-  const totalCalculation = calculateCartTotal();
-  cartTotal.textContent = formatWon(totalCalculation.finalTotal);
+  const total = calculateCartTotal();
+  cartTotal.textContent = formatWon(total.finalTotal);
 }
 
 
 /* =========================
-  9. 계산하기
+  12. 계산
 ========================= */
+
+function getDiscountedUnitPrice(product) {
+  const discountAmount = Math.round(product.price * product.discount / 100);
+  return product.price - discountAmount;
+}
 
 function calculateItem(product, quantity) {
   const subtotal = product.price * quantity;
@@ -476,11 +818,11 @@ function calculateCartTotal() {
       return;
     }
 
-    const itemCalculation = calculateItem(product, item.quantity);
-    beforeCouponTotal += itemCalculation.finalPrice;
+    const calc = calculateItem(product, item.quantity);
+    beforeCouponTotal += calc.finalPrice;
   });
 
-  const couponPercent = Number(couponRate.value);
+  const couponPercent = Number(couponRate.value || "0");
   const couponDiscount = Math.round(beforeCouponTotal * couponPercent / 100);
   const finalTotal = beforeCouponTotal - couponDiscount;
 
@@ -498,7 +840,8 @@ function renderCalculationSteps() {
   if (!selectedProductId) {
     calcSteps.innerHTML = `
       <p class="empty-message">
-        물건을 하나 고르면 계산 과정이 여기에 나타나요.
+        물건을 하나 고르면<br />
+        계산 과정이 크게 보여요.
       </p>
     `;
     return;
@@ -509,136 +852,270 @@ function renderCalculationSteps() {
   if (!product) {
     calcSteps.innerHTML = `
       <p class="empty-message">
-        선택한 물건을 찾을 수 없어요. 다른 물건을 골라 볼까요?
+        선택한 물건을 찾을 수 없어요.
       </p>
     `;
     return;
   }
 
   const cartItem = cart.find((item) => item.productId === selectedProductId);
-  const quantity = cartItem
-    ? cartItem.quantity
-    : getQuantityFromProductCard(selectedProductId);
-
-  const itemCalculation = calculateItem(product, quantity);
-  const cartCalculation = calculateCartTotal();
-
-  const itemDiscountStep = product.discount > 0
-    ? `
-      <div class="step-card">
-        <strong>2단계: 물건 할인 계산하기</strong>
-        <p>
-          ${product.name}은 ${product.discount}% 할인이에요.
-          먼저 할인되는 금액을 구해요.
-        </p>
-        <div class="math-line">
-          ${formatWon(itemCalculation.subtotal)} × ${product.discount}% = ${formatWon(itemCalculation.discountAmount)}
-        </div>
-      </div>
-
-      <div class="step-card">
-        <strong>3단계: 할인 후 금액 구하기</strong>
-        <p>
-          원래 금액에서 할인 금액을 빼면 실제로 내야 할 금액이 됩니다.
-        </p>
-        <div class="math-line">
-          ${formatWon(itemCalculation.subtotal)} − ${formatWon(itemCalculation.discountAmount)}
-          = ${formatWon(itemCalculation.finalPrice)}
-        </div>
-      </div>
-    `
-    : `
-      <div class="step-card">
-        <strong>2단계: 할인 확인하기</strong>
-        <p>
-          이 물건은 상품 할인이 없어요. 그래서 그대로 ${formatWon(itemCalculation.finalPrice)}입니다.
-        </p>
-      </div>
-    `;
+  const quantity = cartItem ? cartItem.quantity : getProductCardQuantity(selectedProductId);
+  const itemCalc = calculateItem(product, quantity);
+  const cartCalc = calculateCartTotal();
 
   calcSteps.innerHTML = `
-    <div class="step-card">
-      <strong>1단계: 단가와 수량 곱하기</strong>
-      <p>
-        ${product.name}의 1개 가격은 ${formatWon(product.price)}이고,
-        수량은 ${quantity}개예요.
-      </p>
-      <div class="math-line">
-        ${formatWon(product.price)} × ${quantity}개 = ${formatWon(itemCalculation.subtotal)}
-      </div>
-    </div>
+    <article class="step-card">
+      <h3>① 1개 가격 보기</h3>
+      <p>${escapeHtml(product.name)} 1개의 가격은 <strong>${formatWon(product.price)}</strong>이에요.</p>
+      <div class="math-line">1개 = ${formatWon(product.price)}</div>
+    </article>
 
-    ${itemDiscountStep}
-
-    <div class="step-card">
-      <strong>장바구니 전체도 함께 계산해요</strong>
-      <p>
-        장바구니에 담긴 물건들의 할인 후 금액을 모두 더했어요.
-      </p>
-      <div class="math-line">
-        물건 합계 = ${formatWon(cartCalculation.beforeCouponTotal)}
+    <article class="step-card">
+      <h3>② 몇 개인지 세기</h3>
+      <p>${quantity}개를 골랐어요. 그림을 보며 하나씩 세어 봐요.</p>
+      <div class="visual-count" aria-label="${quantity}개">
+        ${renderCountIcons(product.emoji || "🛒", quantity)}
       </div>
-    </div>
+    </article>
 
-    <div class="step-card">
-      <strong>쿠폰 할인 적용하기</strong>
-      <p>
-        쿠폰 할인율은 ${cartCalculation.couponPercent}%입니다.
-      </p>
+    <article class="step-card">
+      <h3>③ 단가와 수량 곱하기</h3>
+      <p>1개 가격에 개수를 곱하면 할인 전 금액이 나와요.</p>
       <div class="math-line">
-        ${formatWon(cartCalculation.beforeCouponTotal)} × ${cartCalculation.couponPercent}%
-        = ${formatWon(cartCalculation.couponDiscount)} 할인
+        ${formatWon(product.price)} × ${quantity}개 = ${formatWon(itemCalc.subtotal)}
       </div>
-    </div>
+    </article>
 
-    <div class="step-card good-message">
-      <strong>마지막 단계: 최종 금액 확인하기</strong>
-      <p>
-        아주 잘했어요. 합계에서 쿠폰 할인을 빼면 최종 결제 금액이 됩니다.
-      </p>
+    ${
+      product.discount > 0
+        ? `
+          <article class="step-card">
+            <h3>④ 물건 할인 빼기</h3>
+            <p>${product.discount}% 할인이 있어요. 할인 금액을 빼요.</p>
+            <div class="math-line">
+              ${formatWon(itemCalc.subtotal)} − ${formatWon(itemCalc.discountAmount)}
+              = ${formatWon(itemCalc.finalPrice)}
+            </div>
+          </article>
+        `
+        : `
+          <article class="step-card">
+            <h3>④ 물건 할인 확인</h3>
+            <p>이 물건은 상품 할인이 없어요. 그대로 계산해요.</p>
+            <div class="math-line">
+              ${formatWon(itemCalc.finalPrice)}
+            </div>
+          </article>
+        `
+    }
+
+    <article class="step-card">
+      <h3>⑤ 장바구니 전체 더하기</h3>
+      <p>장바구니에 담은 물건 값을 모두 더했어요.</p>
       <div class="math-line">
-        ${formatWon(cartCalculation.beforeCouponTotal)} − ${formatWon(cartCalculation.couponDiscount)}
-        = ${formatWon(cartCalculation.finalTotal)}
+        합계 = ${formatWon(cartCalc.beforeCouponTotal)}
       </div>
-    </div>
+    </article>
+
+    <article class="step-card">
+      <h3>⑥ 쿠폰 할인</h3>
+      <p>쿠폰 할인은 ${cartCalc.couponPercent}%예요.</p>
+      <div class="math-line">
+        ${formatWon(cartCalc.beforeCouponTotal)} − ${formatWon(cartCalc.couponDiscount)}
+        = ${formatWon(cartCalc.finalTotal)}
+      </div>
+    </article>
+
+    <article class="step-card good-step">
+      <h3>🌟 계산 퀴즈</h3>
+      <p>
+        먼저 이것만 맞혀 봐요.
+        <strong>${formatWon(product.price)} × ${quantity}개</strong>는 얼마일까요?
+      </p>
+
+      <div class="quiz-box">
+        <input
+          id="quizAnswer"
+          type="number"
+          inputmode="numeric"
+          placeholder="정답을 숫자로 써요"
+          aria-label="계산 퀴즈 정답 입력"
+        />
+        <button
+          class="primary-button"
+          type="button"
+          data-check-answer="${itemCalc.subtotal}"
+        >
+          정답 확인
+        </button>
+      </div>
+    </article>
   `;
+}
+
+function renderCountIcons(emoji, quantity) {
+  const maxIcons = 12;
+  const visibleCount = Math.min(quantity, maxIcons);
+  const icons = [];
+
+  for (let i = 0; i < visibleCount; i += 1) {
+    icons.push(`<span aria-hidden="true">${escapeHtml(emoji)}</span>`);
+  }
+
+  if (quantity > maxIcons) {
+    icons.push(`<span>+${quantity - maxIcons}개</span>`);
+  }
+
+  return icons.join("");
+}
+
+function handleQuizClick(event) {
+  const checkButton = event.target.closest("[data-check-answer]");
+
+  if (!checkButton) {
+    return;
+  }
+
+  const answerInput = document.getElementById("quizAnswer");
+  const correctAnswer = Number(checkButton.dataset.checkAnswer);
+  const userAnswer = Number(answerInput.value);
+
+  if (userAnswer === correctAnswer) {
+    addStars(3);
+    showPraise("정답이에요! 정말 잘했어요!", "big");
+    playTone("success");
+    answerInput.value = "";
+  } else {
+    showLiveMessage("조금 아쉬워요. 가격과 개수를 다시 살펴볼까요?");
+    playTone("try");
+    answerInput.classList.add("pulse");
+
+    setTimeout(() => {
+      answerInput.classList.remove("pulse");
+    }, 500);
+  }
 }
 
 
 /* =========================
-  10. 교사용 관리 화면
+  13. 칭찬 별과 피드백
 ========================= */
 
-function openTeacherPanel() {
-  const pin = window.prompt("교사용 PIN을 입력해 주세요.");
+function addStars(amount) {
+  stars += amount;
+  saveStarsForCurrentUser();
+  renderStars();
+}
 
-  if (pin !== TEACHER_PIN) {
-    window.alert("PIN이 맞지 않아요.");
+function renderStars() {
+  starText.textContent = `⭐ ${stars}개`;
+
+  const fillPercent = Math.min(100, (stars % 20) * 5);
+  starFill.style.width = `${fillPercent}%`;
+}
+
+function showPraise(message, size) {
+  showLiveMessage(message);
+  createConfetti(size);
+}
+
+function showLiveMessage(message) {
+  liveMessage.textContent = message;
+}
+
+function createConfetti(size) {
+  const count = size === "big" ? 36 : 16;
+  const symbols = ["⭐", "✨", "🎉", "💛", "👏"];
+
+  for (let i = 0; i < count; i += 1) {
+    const piece = document.createElement("span");
+    piece.className = "confetti-piece";
+    piece.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.animationDelay = `${Math.random() * 0.35}s`;
+
+    confettiLayer.appendChild(piece);
+
+    setTimeout(() => {
+      piece.remove();
+    }, 2200);
+  }
+}
+
+
+/* =========================
+  14. 효과음
+========================= */
+
+/*
+  브라우저에서 직접 짧은 소리를 만듭니다.
+  Web Audio API의 OscillatorNode는 일정한 파형의 소리를 만들 수 있습니다.
+*/
+let audioContext = null;
+
+function playTone(type) {
+  if (!soundEnabled) {
     return;
   }
 
-  teacherPanel.classList.remove("hidden");
-  teacherLoginBtn.classList.add("hidden");
-  teacherLogoutBtn.classList.remove("hidden");
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 
-  renderTeacherProducts();
+  if (!AudioContextClass) {
+    return;
+  }
+
+  if (!audioContext) {
+    audioContext = new AudioContextClass();
+  }
+
+  const now = audioContext.currentTime;
+
+  const tones = {
+    tap: [440],
+    add: [523.25, 659.25],
+    success: [523.25, 659.25, 783.99],
+    try: [220, 196]
+  };
+
+  const frequencies = tones[type] || tones.tap;
+
+  frequencies.forEach((frequency, index) => {
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(frequency, now + index * 0.12);
+
+    gain.gain.setValueAtTime(0.0001, now + index * 0.12);
+    gain.gain.exponentialRampToValueAtTime(0.09, now + index * 0.12 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.12 + 0.14);
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start(now + index * 0.12);
+    oscillator.stop(now + index * 0.12 + 0.16);
+  });
 }
 
-function closeTeacherPanel() {
-  teacherPanel.classList.add("hidden");
-  teacherLoginBtn.classList.remove("hidden");
-  teacherLogoutBtn.classList.add("hidden");
-  resetTeacherForm();
-}
+
+/* =========================
+  15. 교사용 관리자
+========================= */
 
 function handleTeacherFormSubmit(event) {
   event.preventDefault();
 
-  const idBeingEdited = editingProductId.value;
+  if (currentUser.role !== "teacher") {
+    window.alert("교사용 화면에서만 수정할 수 있어요.");
+    return;
+  }
 
+  const idBeingEdited = editingProductId.value;
   const name = productName.value.trim();
   const price = Number(productPrice.value);
-  const discount = Number(productDiscount.value || 0);
+  const discount = Number(productDiscount.value || "0");
+  const emoji = productEmoji.value.trim() || "🛒";
   const imageFromUrl = productImageUrl.value.trim();
 
   if (!name) {
@@ -652,22 +1129,17 @@ function handleTeacherFormSubmit(event) {
   }
 
   if (!Number.isFinite(discount) || discount < 0 || discount > 100) {
-    window.alert("할인율은 0부터 100 사이의 숫자로 입력해 주세요.");
+    window.alert("할인율은 0부터 100 사이로 입력해 주세요.");
     return;
   }
 
-  // 사진은 다음 순서로 정합니다.
-  // 1. 파일로 선택한 사진
-  // 2. 입력한 사진 URL
-  // 3. 기존 상품 사진
-  // 4. 자동으로 만든 기본 그림
   let image = selectedImageData || imageFromUrl;
 
   if (idBeingEdited) {
-    const existingProduct = getProductById(idBeingEdited);
+    const oldProduct = getProductById(idBeingEdited);
 
-    if (!image && existingProduct) {
-      image = existingProduct.image;
+    if (!image && oldProduct) {
+      image = oldProduct.image;
     }
 
     products = products.map((product) => {
@@ -680,19 +1152,19 @@ function handleTeacherFormSubmit(event) {
         name,
         price,
         discount,
-        image: image || makeSvgImage(name, "#4f7cff", "#e0ecff")
+        emoji,
+        image: image || makeSvgImage(name, emoji, "#245cff", "#eaf0ff")
       };
     });
   } else {
-    const newProduct = {
+    products.push({
       id: makeId(),
       name,
       price,
       discount,
-      image: image || makeSvgImage(name, "#4f7cff", "#e0ecff")
-    };
-
-    products.push(newProduct);
+      emoji,
+      image: image || makeSvgImage(name, emoji, "#245cff", "#eaf0ff")
+    });
   }
 
   saveProducts();
@@ -703,7 +1175,8 @@ function handleTeacherFormSubmit(event) {
   renderTeacherProducts();
   resetTeacherForm();
 
-  window.alert("상품 정보가 저장되었어요.");
+  showPraise("상품 정보가 저장되었어요!", "small");
+  playTone("success");
 }
 
 function handleImageFileChange(event) {
@@ -714,8 +1187,6 @@ function handleImageFileChange(event) {
     return;
   }
 
-  // 이미지 파일을 브라우저가 읽을 수 있는 데이터 주소로 바꿉니다.
-  // 이렇게 하면 서버 없이도 선택한 사진을 화면에 보여 줄 수 있습니다.
   const reader = new FileReader();
 
   reader.onload = () => {
@@ -728,6 +1199,10 @@ function handleImageFileChange(event) {
 }
 
 function renderTeacherProducts() {
+  if (currentUser.role !== "teacher") {
+    return;
+  }
+
   teacherProductList.innerHTML = "";
 
   if (products.length === 0) {
@@ -747,15 +1222,15 @@ function renderTeacherProducts() {
       <img src="${escapeAttribute(product.image)}" alt="${escapeAttribute(product.name)} 사진" />
 
       <div>
-        <h4>${escapeHtml(product.name)}</h4>
+        <h4>${escapeHtml(product.emoji || "🛒")} ${escapeHtml(product.name)}</h4>
         <p>가격: ${formatWon(product.price)}</p>
         <p>할인율: ${product.discount}%</p>
 
         <div class="teacher-card-actions">
-          <button class="small-button" data-edit-teacher-product="${product.id}">
+          <button class="soft-button" type="button" data-edit-product="${product.id}">
             수정
           </button>
-          <button class="remove-button" data-delete-teacher-product="${product.id}">
+          <button class="remove-button" type="button" data-delete-product="${product.id}">
             삭제
           </button>
         </div>
@@ -767,17 +1242,15 @@ function renderTeacherProducts() {
 }
 
 function handleTeacherProductListClick(event) {
-  const editButton = event.target.closest("[data-edit-teacher-product]");
-  const deleteButton = event.target.closest("[data-delete-teacher-product]");
+  const editButton = event.target.closest("[data-edit-product]");
+  const deleteButton = event.target.closest("[data-delete-product]");
 
   if (editButton) {
-    const productId = editButton.dataset.editTeacherProduct;
-    startEditingProduct(productId);
+    startEditingProduct(editButton.dataset.editProduct);
   }
 
   if (deleteButton) {
-    const productId = deleteButton.dataset.deleteTeacherProduct;
-    deleteProduct(productId);
+    deleteProduct(deleteButton.dataset.deleteProduct);
   }
 }
 
@@ -792,13 +1265,17 @@ function startEditingProduct(productId) {
   productName.value = product.name;
   productPrice.value = product.price;
   productDiscount.value = product.discount;
+  productEmoji.value = product.emoji || "";
   productImageUrl.value = product.image.startsWith("data:image") ? "" : product.image;
   productImageFile.value = "";
   selectedImageData = "";
   imagePreview.src = product.image;
 
   teacherFormTitle.textContent = "물건 수정하기";
-  teacherForm.scrollIntoView({ behavior: "smooth", block: "start" });
+  teacherForm.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
 }
 
 function deleteProduct(productId) {
@@ -808,7 +1285,7 @@ function deleteProduct(productId) {
     return;
   }
 
-  const ok = window.confirm(`${product.name}을/를 정말 삭제할까요?`);
+  const ok = window.confirm(`${product.name}을/를 삭제할까요?`);
 
   if (!ok) {
     return;
@@ -822,27 +1299,28 @@ function deleteProduct(productId) {
   }
 
   saveProducts();
+  saveCartForCurrentUser();
 
   renderProducts();
   renderCart();
   renderCalculationSteps();
   renderTeacherProducts();
   resetTeacherForm();
+
+  showLiveMessage("상품을 삭제했어요.");
 }
 
 function resetTeacherForm() {
   teacherForm.reset();
   editingProductId.value = "";
-  productDiscount.value = 0;
+  productDiscount.value = "0";
   selectedImageData = "";
   imagePreview.removeAttribute("src");
   teacherFormTitle.textContent = "새 물건 추가하기";
 }
 
 function resetProductsToDefault() {
-  const ok = window.confirm(
-    "상품 목록을 처음 상태로 되돌릴까요? 교사가 바꾼 상품 정보는 사라집니다."
-  );
+  const ok = window.confirm("상품 목록을 처음 상태로 되돌릴까요?");
 
   if (!ok) {
     return;
@@ -853,17 +1331,126 @@ function resetProductsToDefault() {
   selectedProductId = null;
 
   saveProducts();
+  saveCartForCurrentUser();
 
   renderProducts();
   renderCart();
   renderCalculationSteps();
   renderTeacherProducts();
   resetTeacherForm();
+
+  showPraise("기본 상품으로 되돌렸어요.", "small");
 }
 
 
 /* =========================
-  11. 작은 도우미 함수들
+  16. localStorage 저장
+========================= */
+
+function getSessionKey() {
+  return `${APP_PREFIX}:sessionUser`;
+}
+
+function getProductsKey() {
+  return `${APP_PREFIX}:products`;
+}
+
+function getCartKey() {
+  return `${APP_PREFIX}:cart:${currentUser.id}`;
+}
+
+function getStarsKey() {
+  return `${APP_PREFIX}:stars:${currentUser.id}`;
+}
+
+function getSoundKey() {
+  return `${APP_PREFIX}:soundEnabled`;
+}
+
+function loadProducts() {
+  const saved = readJson(getProductsKey(), null);
+
+  if (Array.isArray(saved)) {
+    return saved;
+  }
+
+  return getDefaultProducts();
+}
+
+function saveProducts() {
+  writeJson(getProductsKey(), products);
+}
+
+function loadCartForCurrentUser() {
+  const saved = readJson(getCartKey(), []);
+
+  if (Array.isArray(saved)) {
+    return saved;
+  }
+
+  return [];
+}
+
+function saveCartForCurrentUser() {
+  writeJson(getCartKey(), cart);
+}
+
+function loadStarsForCurrentUser() {
+  const saved = readJson(getStarsKey(), 0);
+  return Number.isFinite(Number(saved)) ? Number(saved) : 0;
+}
+
+function saveStarsForCurrentUser() {
+  writeJson(getStarsKey(), stars);
+}
+
+function loadSoundPreference() {
+  const saved = readJson(getSoundKey(), true);
+  return saved !== false;
+}
+
+function saveSoundPreference() {
+  writeJson(getSoundKey(), soundEnabled);
+}
+
+function readJson(key, fallbackValue) {
+  try {
+    const raw = localStorage.getItem(key);
+
+    if (raw === null) {
+      return fallbackValue;
+    }
+
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("저장된 데이터를 읽는 중 문제가 생겼습니다.", error);
+    return fallbackValue;
+  }
+}
+
+function writeJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error("데이터 저장 중 문제가 생겼습니다.", error);
+
+    window.alert(
+      "브라우저 저장 공간이 부족할 수 있어요. 큰 사진을 많이 넣었다면 작은 사진을 사용해 주세요."
+    );
+  }
+}
+
+function removeStorage(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (error) {
+    console.error("저장 데이터를 지우는 중 문제가 생겼습니다.", error);
+  }
+}
+
+
+/* =========================
+  17. 작은 도우미 함수
 ========================= */
 
 function getProductById(productId) {
@@ -874,12 +1461,10 @@ function makeId() {
   return "product_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2);
 }
 
-function formatWon(number) {
-  return new Intl.NumberFormat("ko-KR").format(number) + "원";
+function formatWon(value) {
+  return new Intl.NumberFormat("ko-KR").format(value) + "원";
 }
 
-// HTML 안에 글자를 넣을 때 안전하게 바꿔 줍니다.
-// 예: < 기호가 들어와도 태그로 실행되지 않게 합니다.
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -889,7 +1474,6 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-// 이미지 주소나 alt 글자처럼 HTML 속성에 들어갈 값을 안전하게 바꿉니다.
 function escapeAttribute(value) {
   return escapeHtml(value);
 }
