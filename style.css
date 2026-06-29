@@ -1,0 +1,564 @@
+/* =========================
+  기본 화면 설정
+========================= */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color: #243044;
+  background: #f5f7fb;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* =========================
+  상단 제목 영역
+========================= */
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: center;
+  padding: 32px;
+  color: white;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.28), transparent 28%),
+    linear-gradient(135deg, #4f7cff, #7c4dff);
+}
+
+.app-header h1 {
+  margin: 4px 0 8px;
+  font-size: clamp(28px, 5vw, 46px);
+  line-height: 1.1;
+}
+
+.header-description {
+  margin: 0;
+  max-width: 680px;
+  font-size: 17px;
+  opacity: 0.94;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* =========================
+  전체 레이아웃
+========================= */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 24px;
+  padding: 24px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.student-area,
+.teacher-panel {
+  min-width: 0;
+}
+
+.cart-area {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* =========================
+  공통 카드와 제목
+========================= */
+
+.card {
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  background: white;
+  box-shadow: 0 12px 34px rgba(80, 93, 124, 0.09);
+}
+
+.section-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.section-title-row h2,
+.card h2,
+.card h3 {
+  margin: 0;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: #5b6ee1;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.teacher-note {
+  margin: 6px 0 0;
+  color: #64748b;
+}
+
+/* =========================
+  버튼 디자인
+========================= */
+
+.primary-button,
+.secondary-button,
+.small-button,
+.danger-button {
+  border: 0;
+  border-radius: 999px;
+  font-weight: 800;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.primary-button:hover,
+.secondary-button:hover,
+.small-button:hover,
+.danger-button:hover {
+  transform: translateY(-1px);
+}
+
+.primary-button {
+  padding: 12px 18px;
+  color: white;
+  background: #4f7cff;
+  box-shadow: 0 8px 18px rgba(79, 124, 255, 0.32);
+}
+
+.secondary-button {
+  padding: 12px 18px;
+  color: #32415f;
+  background: white;
+  box-shadow: 0 8px 18px rgba(50, 65, 95, 0.12);
+}
+
+.small-button {
+  padding: 8px 13px;
+  color: #4f7cff;
+  background: #eef3ff;
+}
+
+.danger-button {
+  padding: 10px 15px;
+  color: #b42318;
+  background: #fff0ed;
+}
+
+/* =========================
+  학생용 상품 카드
+========================= */
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px;
+}
+
+.product-card {
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  background: white;
+  box-shadow: 0 10px 26px rgba(80, 93, 124, 0.08);
+}
+
+.product-image-wrap {
+  position: relative;
+  height: 170px;
+  background: #eef3ff;
+}
+
+.product-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.discount-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: white;
+  background: #f97316;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.product-body {
+  padding: 18px;
+}
+
+.product-body h3 {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+
+.price-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.price-line strong {
+  font-size: 22px;
+}
+
+.price-line span {
+  color: #64748b;
+}
+
+.quantity-row {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.quantity-row label {
+  color: #475569;
+  font-weight: 700;
+}
+
+.quantity-row input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+}
+
+.product-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+/* =========================
+  장바구니
+========================= */
+
+.cart-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 70px;
+}
+
+.empty-message {
+  margin: 0;
+  padding: 18px;
+  border-radius: 18px;
+  color: #64748b;
+  background: #f8fafc;
+  text-align: center;
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.cart-item img {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  object-fit: cover;
+  background: #eef3ff;
+}
+
+.cart-item h4 {
+  margin: 0 0 4px;
+}
+
+.cart-item p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.cart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.round-control {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  color: #32415f;
+  background: #eef3ff;
+  font-weight: 900;
+}
+
+.remove-button {
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 999px;
+  color: #b42318;
+  background: #fff0ed;
+  font-weight: 800;
+}
+
+.coupon-box {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.coupon-box label {
+  font-weight: 800;
+}
+
+.coupon-box select {
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  background: white;
+}
+
+.total-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 20px;
+  color: white;
+  background: linear-gradient(135deg, #4f7cff, #7c4dff);
+}
+
+.total-box span {
+  font-weight: 800;
+}
+
+.total-box strong {
+  font-size: 28px;
+}
+
+/* =========================
+  단계별 계산 설명
+========================= */
+
+.calc-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.step-card {
+  padding: 16px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.step-card strong {
+  color: #4f7cff;
+}
+
+.math-line {
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 14px;
+  background: white;
+  font-size: 18px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.good-message {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+/* =========================
+  교사용 관리자
+========================= */
+
+.teacher-panel {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+}
+
+.teacher-grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+}
+
+.teacher-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.teacher-form label {
+  margin-top: 4px;
+  font-weight: 800;
+}
+
+.teacher-form input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+}
+
+.preview-box {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.preview-box span {
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.preview-box img {
+  width: 100%;
+  height: 180px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 18px;
+  object-fit: cover;
+  background: #f8fafc;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.teacher-product-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.teacher-product-card {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.teacher-product-card img {
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  object-fit: cover;
+  background: #eef3ff;
+}
+
+.teacher-product-card h4 {
+  margin: 0 0 4px;
+}
+
+.teacher-product-card p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.teacher-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+/* =========================
+  작은 화면 대응
+========================= */
+
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cart-area {
+    order: -1;
+  }
+
+  .teacher-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .app-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .layout,
+  .app-header {
+    padding: 18px;
+  }
+
+  .section-title-row {
+    flex-direction: column;
+  }
+
+  .total-box {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
