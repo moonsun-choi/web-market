@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>계산이 쉬워지는 우리 반 마켓</title>
+
+  <!-- CSS 파일 연결 -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">즐겁게 배우는 가격 계산</p>
+      <h1>계산이 쉬워지는 우리 반 마켓</h1>
+      <p class="header-description">
+        물건을 고르고, 수량을 정하고, 가격 계산 과정을 차근차근 살펴봐요.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button id="teacherLoginBtn" class="secondary-button">교사용 관리 열기</button>
+      <button id="teacherLogoutBtn" class="secondary-button hidden">교사용 관리 닫기</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- =========================
+      학생용 마켓 영역
+    ========================== -->
+    <section class="student-area">
+      <div class="section-title-row">
+        <div>
+          <p class="eyebrow">학생 화면</p>
+          <h2>1. 물건을 골라 장바구니에 담아 봐요</h2>
+        </div>
+      </div>
+
+      <div id="productGrid" class="product-grid">
+        <!-- JavaScript가 상품 카드를 자동으로 넣어 줍니다. -->
+      </div>
+    </section>
+
+    <!-- =========================
+      장바구니와 계산 설명 영역
+    ========================== -->
+    <aside class="cart-area">
+      <section class="card">
+        <div class="section-title-row">
+          <div>
+            <p class="eyebrow">장바구니</p>
+            <h2>2. 담은 물건 확인하기</h2>
+          </div>
+          <button id="clearCartBtn" class="small-button">비우기</button>
+        </div>
+
+        <div id="cartItems" class="cart-items">
+          <!-- JavaScript가 장바구니 내용을 자동으로 넣어 줍니다. -->
+        </div>
+
+        <div class="coupon-box">
+          <label for="couponRate">반짝 쿠폰 할인</label>
+          <select id="couponRate">
+            <option value="0">할인 없음</option>
+            <option value="5">5% 쿠폰</option>
+            <option value="10">10% 쿠폰</option>
+            <option value="20">20% 쿠폰</option>
+          </select>
+        </div>
+
+        <div class="total-box">
+          <span>최종 결제 금액</span>
+          <strong id="cartTotal">0원</strong>
+        </div>
+      </section>
+
+      <section class="card">
+        <p class="eyebrow">계산 과정</p>
+        <h2>3. 어떻게 계산했는지 살펴봐요</h2>
+
+        <div id="calcSteps" class="calc-steps">
+          <!-- JavaScript가 단계별 계산 설명을 자동으로 넣어 줍니다. -->
+        </div>
+      </section>
+    </aside>
+
+    <!-- =========================
+      교사용 관리자 영역
+    ========================== -->
+    <section id="teacherPanel" class="teacher-panel hidden">
+      <div class="section-title-row">
+        <div>
+          <p class="eyebrow">교사용 관리</p>
+          <h2>마켓 물건을 직접 바꿀 수 있어요</h2>
+          <p class="teacher-note">
+            이름, 가격, 사진, 할인율을 수정하면 학생 화면에도 바로 반영됩니다.
+          </p>
+        </div>
+        <button id="resetProductsBtn" class="danger-button">기본 상품으로 되돌리기</button>
+      </div>
+
+      <div class="teacher-grid">
+        <form id="teacherForm" class="teacher-form card">
+          <input type="hidden" id="editingProductId" />
+
+          <h3 id="teacherFormTitle">새 물건 추가하기</h3>
+
+          <label for="productName">물건 이름</label>
+          <input
+            id="productName"
+            type="text"
+            placeholder="예: 사과"
+            required
+          />
+
+          <label for="productPrice">가격</label>
+          <input
+            id="productPrice"
+            type="number"
+            min="0"
+            step="100"
+            placeholder="예: 1200"
+            required
+          />
+
+          <label for="productDiscount">물건 할인율</label>
+          <input
+            id="productDiscount"
+            type="number"
+            min="0"
+            max="100"
+            step="1"
+            placeholder="예: 10"
+            value="0"
+          />
+
+          <label for="productImageUrl">사진 주소</label>
+          <input
+            id="productImageUrl"
+            type="url"
+            placeholder="사진 URL을 넣거나 아래에서 파일을 선택하세요"
+          />
+
+          <label for="productImageFile">내 컴퓨터에서 사진 선택</label>
+          <input
+            id="productImageFile"
+            type="file"
+            accept="image/*"
+          />
+
+          <div class="preview-box">
+            <span>사진 미리보기</span>
+            <img id="imagePreview" alt="선택한 상품 사진 미리보기" />
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="primary-button">저장하기</button>
+            <button type="button" id="clearTeacherFormBtn" class="secondary-button">
+              입력 칸 비우기
+            </button>
+          </div>
+        </form>
+
+        <div class="card">
+          <h3>현재 등록된 물건</h3>
+          <div id="teacherProductList" class="teacher-product-list">
+            <!-- JavaScript가 교사용 상품 목록을 자동으로 넣어 줍니다. -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- JavaScript 파일 연결 -->
+  <script src="script.js"></script>
+</body>
+</html>
