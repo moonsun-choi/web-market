@@ -1,55 +1,43 @@
-/* =========================================================
-  반짝반짝 우리 반 마켓 - CSS
-  ---------------------------------------------------------
-  목표:
-  - 글자와 버튼을 크게 보여 주기
-  - 색상 대비를 또렷하게 만들기
-  - 모바일과 PC에서 모두 편하게 사용하기
-  - 칭찬 애니메이션으로 성취감을 주기
-========================================================= */
-
 :root {
   --bg: #f3f7ff;
-  --card: #ffffff;
-  --text: #172033;
-  --muted: #5d6b82;
-  --primary: #245cff;
-  --primary-dark: #1740b8;
-  --sun: #ffb703;
-  --green: #16803c;
-  --danger: #c1121f;
-  --soft-blue: #eaf0ff;
-  --soft-yellow: #fff7d6;
-  --soft-green: #e7f8ee;
-  --border: #d7e0ef;
-  --shadow: 0 16px 38px rgba(32, 51, 91, 0.13);
-  --radius-xl: 28px;
-  --radius-lg: 22px;
-  --focus: 0 0 0 4px rgba(36, 92, 255, 0.25);
+  --panel: #ffffff;
+  --ink: #172033;
+  --muted: #516070;
+  --brand: #1457d9;
+  --brand-dark: #0b3f9c;
+  --brand-soft: #e7f0ff;
+  --success: #0a7c41;
+  --warning: #a05200;
+  --danger: #b42318;
+  --danger-soft: #fff0ee;
+  --line: #d7e0ef;
+  --shadow: 0 18px 48px rgba(22, 38, 73, 0.12);
+  --radius-lg: 28px;
+  --radius-md: 18px;
+  --radius-sm: 12px;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-  color: var(--text);
+  min-height: 100vh;
+  color: var(--ink);
   background:
-    radial-gradient(circle at 10% 5%, #fff3c4 0, transparent 25%),
-    radial-gradient(circle at 95% 12%, #d9e6ff 0, transparent 28%),
-    var(--bg);
+    radial-gradient(circle at top left, #dcecff 0, transparent 34rem),
+    linear-gradient(180deg, var(--bg), #fffdf6);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  line-height: 1.5;
 }
 
 button,
-input,
-select {
+input {
   font: inherit;
 }
 
@@ -58,801 +46,706 @@ button {
 }
 
 button:focus-visible,
-input:focus-visible,
-select:focus-visible {
-  outline: none;
-  box-shadow: var(--focus);
+input:focus-visible {
+  outline: 4px solid #ffcc33;
+  outline-offset: 3px;
 }
 
-.hidden {
+img {
+  display: block;
+  max-width: 100%;
+}
+
+[hidden] {
   display: none !important;
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+.app-shell {
+  width: min(1180px, calc(100% - 28px));
+  margin: 0 auto;
+  padding: 24px 0 44px;
 }
 
-/* =========================
-  상단
-========================= */
+.app-header,
+.panel,
+.mission-card {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow);
+}
 
 .app-header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 24px;
+  display: flex;
   align-items: center;
-  padding: 32px;
-  color: white;
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.32), transparent 30%),
-    linear-gradient(135deg, #245cff, #7b2cff);
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+  padding: 22px;
+  border-radius: var(--radius-lg);
 }
 
-.header-text h1 {
-  margin: 4px 0 12px;
-  font-size: clamp(34px, 6vw, 58px);
-  line-height: 1.05;
+.header-copy h1,
+.header-copy p {
+  margin: 0;
+}
+
+.header-copy h1 {
+  margin-top: 4px;
+  font-size: clamp(2rem, 4vw, 3.2rem);
   letter-spacing: -0.04em;
 }
 
-.header-text p {
-  max-width: 760px;
-  margin: 0;
-  font-size: 20px;
-  line-height: 1.55;
+.header-copy p:last-child {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 1.04rem;
+}
+
+.header-actions,
+.admin-actions,
+.mission-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mode-button,
+.primary-button,
+.secondary-button,
+.danger-button,
+.add-button,
+.round-button,
+.remove-button {
+  min-height: 48px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-weight: 800;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.mode-button:hover,
+.primary-button:hover,
+.secondary-button:hover,
+.danger-button:hover,
+.add-button:hover,
+.round-button:hover,
+.remove-button:hover {
+  transform: translateY(-1px);
+}
+
+.mode-button {
+  color: var(--ink);
+  background: #ffffff;
+  border-color: var(--line);
+}
+
+.mode-button.active,
+.primary-button,
+.add-button {
+  color: #ffffff;
+  background: var(--brand);
+  border-color: var(--brand-dark);
+  box-shadow: 0 10px 20px rgba(20, 87, 217, 0.22);
+}
+
+.primary-button:active,
+.add-button:active,
+.round-button:active {
+  transform: scale(0.98);
+}
+
+.secondary-button {
+  color: var(--brand-dark);
+  background: var(--brand-soft);
+  border-color: #b9cdfa;
+}
+
+.danger-button,
+.remove-button {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-color: #ffd0ca;
+}
+
+.wide-button {
+  width: 100%;
+  justify-content: center;
+  margin-top: 14px;
 }
 
 .eyebrow {
-  margin: 0 0 7px;
-  color: #245cff;
-  font-size: 14px;
+  margin: 0 0 6px;
+  color: var(--brand-dark);
+  font-size: 0.84rem;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.app-header .eyebrow {
-  color: #fff2a8;
-}
-
-.login-card {
+.mission-card {
   display: grid;
-  gap: 12px;
-  padding: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(10px);
-}
-
-.user-badge {
-  display: grid;
-  grid-template-columns: 54px 1fr;
-  gap: 12px;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
   align-items: center;
-  padding: 12px;
-  border-radius: 20px;
-  color: var(--text);
-  background: white;
-}
-
-.avatar {
-  display: grid;
-  place-items: center;
-  width: 54px;
-  height: 54px;
-  border-radius: 18px;
-  background: var(--soft-yellow);
-  font-size: 30px;
-}
-
-.user-badge strong,
-.user-badge small {
-  display: block;
-}
-
-.user-badge small {
-  margin-top: 3px;
-  color: var(--muted);
-}
-
-.google-button-area {
-  min-height: 44px;
-}
-
-.tiny-help {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.login-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-/* =========================
-  레이아웃
-========================= */
-
-.app-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 430px;
-  gap: 24px;
-  width: min(1480px, 100%);
-  margin: 0 auto;
-  padding: 24px;
-}
-
-.student-panel,
-.cart-panel,
-.teacher-panel {
-  min-width: 0;
-}
-
-.cart-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.teacher-panel {
-  grid-column: 1 / -1;
-}
-
-.card,
-.learning-tip {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  background: var(--card);
-  box-shadow: var(--shadow);
-}
-
-.card {
+  margin-bottom: 20px;
   padding: 22px;
+  border-radius: var(--radius-lg);
 }
 
-.learning-tip {
-  display: grid;
-  grid-template-columns: 54px 1fr;
-  gap: 14px;
-  align-items: center;
-  margin-bottom: 18px;
-  padding: 18px;
-  background: var(--soft-yellow);
-}
-
-.learning-tip span {
-  font-size: 38px;
-}
-
-.learning-tip p {
+.mission-card h2,
+.mission-card p {
   margin: 0;
-  font-size: 18px;
-  line-height: 1.55;
 }
 
-.section-heading {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
-  margin-bottom: 18px;
+.mission-card h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  letter-spacing: -0.03em;
 }
 
-.section-heading h2 {
-  margin: 0;
-  font-size: clamp(24px, 3vw, 34px);
-}
-
-.muted {
-  margin: 8px 0 0;
+.mission-card p:last-child {
+  margin-top: 8px;
   color: var(--muted);
 }
 
-/* =========================
-  버튼
-========================= */
-
-.primary-button,
-.soft-button,
-.icon-button,
-.small-danger-button,
-.round-button,
-.remove-button {
-  border: 0;
-  font-weight: 900;
-  transition:
-    transform 0.16s ease,
-    box-shadow 0.16s ease,
-    filter 0.16s ease;
-}
-
-.primary-button:hover,
-.soft-button:hover,
-.icon-button:hover,
-.small-danger-button:hover,
-.round-button:hover,
-.remove-button:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.02);
-}
-
-.primary-button {
-  min-height: 54px;
-  padding: 14px 20px;
-  border-radius: 999px;
-  color: white;
-  background: var(--primary);
-  box-shadow: 0 10px 24px rgba(36, 92, 255, 0.28);
-}
-
-.soft-button {
-  min-height: 46px;
-  padding: 11px 16px;
-  border-radius: 999px;
-  color: #17325f;
-  background: white;
-}
-
-.icon-button {
-  min-height: 46px;
-  padding: 10px 16px;
-  border-radius: 999px;
-  color: #17325f;
-  background: var(--soft-blue);
-}
-
-.small-danger-button {
+.step-chip {
+  display: inline-flex;
+  align-items: center;
   min-height: 42px;
-  padding: 9px 14px;
+  padding: 8px 14px;
+  border: 2px solid #b9cdfa;
   border-radius: 999px;
-  color: var(--danger);
-  background: #fff0f0;
+  color: var(--brand-dark);
+  background: var(--brand-soft);
+  font-weight: 900;
+  white-space: nowrap;
 }
 
-.round-button {
+.student-layout {
   display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  color: white;
-  background: var(--primary);
-  font-size: 24px;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 20px;
+  align-items: start;
 }
 
-.remove-button {
-  min-height: 40px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  color: var(--danger);
-  background: #fff0f0;
+.panel {
+  padding: 20px;
+  border-radius: var(--radius-lg);
 }
 
-/* =========================
-  상품 카드
-========================= */
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.section-title-row h2,
+.section-title-row p {
+  margin: 0;
+}
+
+.section-title-row h2 {
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  letter-spacing: -0.03em;
+}
+
+.small-guide,
+.help-text {
+  color: var(--muted);
+  font-weight: 700;
+}
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
 }
 
 .product-card {
-  overflow: hidden;
+  position: relative;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
   border: 3px solid transparent;
-  border-radius: var(--radius-xl);
-  background: white;
-  box-shadow: var(--shadow);
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(22, 38, 73, 0.08);
 }
 
-.product-card.selected {
-  border-color: var(--sun);
+.product-card:hover,
+.product-card:focus-within {
+  border-color: #ffcc33;
 }
 
 .product-image-wrap {
   position: relative;
-  height: 190px;
-  background: var(--soft-blue);
+  overflow: hidden;
+  border-radius: 24px;
+  background: #f6f8ff;
 }
 
-.product-image-wrap img {
+.product-image {
   width: 100%;
-  height: 100%;
+  height: 150px;
   object-fit: cover;
+  border-radius: 24px;
 }
 
-.product-emoji {
+.cart-badge {
   position: absolute;
-  right: 12px;
-  bottom: 12px;
-  display: grid;
-  place-items: center;
-  width: 58px;
-  height: 58px;
-  border-radius: 18px;
-  background: white;
-  font-size: 34px;
-  box-shadow: 0 8px 18px rgba(23, 32, 51, 0.16);
-}
-
-.discount-badge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  padding: 7px 12px;
+  right: 10px;
+  bottom: 10px;
+  padding: 7px 10px;
   border-radius: 999px;
-  color: #321304;
-  background: #ffd166;
+  color: #ffffff;
+  background: rgba(23, 32, 51, 0.86);
+  font-size: 0.92rem;
   font-weight: 900;
 }
 
-.product-body {
-  padding: 18px;
-}
-
-.product-body h3 {
-  margin: 0 0 10px;
-  font-size: 28px;
-}
-
-.price-box {
-  display: grid;
-  gap: 4px;
-  margin-bottom: 14px;
-}
-
-.price-box strong {
-  font-size: 26px;
-}
-
-.old-price {
-  color: var(--muted);
-  text-decoration: line-through;
-}
-
-.quantity-control {
-  display: grid;
-  grid-template-columns: 46px 1fr 46px;
-  gap: 10px;
-  align-items: center;
-  margin: 14px 0;
-}
-
-.quantity-display {
-  display: grid;
-  place-items: center;
-  min-height: 46px;
-  border: 2px solid var(--border);
-  border-radius: 16px;
-  background: #fbfdff;
-  font-size: 23px;
-  font-weight: 900;
-}
-
-.product-actions {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
-
-/* =========================
-  장바구니
-========================= */
-
-.cart-items {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-height: 82px;
-}
-
-.empty-message {
+.product-card h3 {
   margin: 0;
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
+}
+
+.price-pill {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  min-height: 42px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--success);
+  background: #eaf8f0;
+  font-size: 1.06rem;
+  font-weight: 900;
+}
+
+.add-button {
+  width: 100%;
+  font-size: 1.05rem;
+}
+
+.cart-panel {
+  position: sticky;
+  top: 14px;
+}
+
+.cart-list {
+  display: grid;
+  gap: 12px;
+}
+
+.empty-state {
   padding: 18px;
-  border: 2px dashed var(--border);
-  border-radius: 20px;
+  border: 2px dashed #b9cdfa;
+  border-radius: var(--radius-md);
   color: var(--muted);
-  background: #fbfdff;
+  background: var(--brand-soft);
+  font-weight: 800;
   text-align: center;
-  line-height: 1.5;
 }
 
 .cart-item {
   display: grid;
-  grid-template-columns: 76px 1fr;
+  grid-template-columns: 78px minmax(0, 1fr);
   gap: 12px;
   padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  background: white;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-md);
+  background: #ffffff;
 }
 
-.cart-item img {
-  width: 76px;
-  height: 76px;
+.cart-thumb {
+  width: 78px;
+  height: 78px;
   border-radius: 18px;
   object-fit: cover;
-  background: var(--soft-blue);
+  background: #f6f8ff;
 }
 
-.cart-item h3 {
-  margin: 0 0 4px;
-  font-size: 21px;
-}
-
-.cart-item p {
+.cart-info h3,
+.cart-info p {
   margin: 0;
-  color: var(--muted);
 }
 
-.cart-item strong {
-  color: var(--text);
+.cart-info h3 {
+  font-size: 1.22rem;
+  letter-spacing: -0.02em;
 }
 
-.cart-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.coupon-box {
-  display: grid;
-  gap: 8px;
-  margin-top: 18px;
-  font-weight: 900;
-}
-
-.coupon-box select {
-  width: 100%;
-  min-height: 50px;
-  padding: 10px 12px;
-  border: 2px solid var(--border);
-  border-radius: 18px;
-  background: white;
-}
-
-.total-box {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  align-items: center;
-  margin-top: 18px;
-  padding: 18px;
-  border-radius: 24px;
-  color: white;
-  background: linear-gradient(135deg, var(--primary), #7b2cff);
-}
-
-.total-box span {
-  font-weight: 900;
-}
-
-.total-box strong {
-  font-size: 34px;
-}
-
-/* =========================
-  계산 단계
-========================= */
-
-.calc-steps {
-  display: grid;
-  gap: 12px;
-}
-
-.step-card {
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  background: #fbfdff;
-}
-
-.step-card h3 {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin: 0 0 8px;
-  font-size: 20px;
-}
-
-.step-card p {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.visual-count {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-  font-size: 30px;
-}
-
-.math-line {
-  margin-top: 12px;
-  padding: 14px;
-  border-radius: 18px;
-  background: white;
-  color: var(--primary-dark);
-  font-size: clamp(22px, 4vw, 30px);
-  font-weight: 1000;
-  text-align: center;
-}
-
-.quiz-box {
-  display: grid;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.quiz-box input {
-  width: 100%;
-  min-height: 54px;
-  padding: 12px;
-  border: 2px solid var(--border);
-  border-radius: 18px;
-  font-size: 24px;
-  font-weight: 900;
-  text-align: center;
-}
-
-.good-step {
-  border-color: #8ce7ad;
-  background: var(--soft-green);
-}
-
-/* =========================
-  별 보상
-========================= */
-
-.reward-card p {
-  color: var(--muted);
-}
-
-.star-meter {
-  display: grid;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-#starText {
-  font-size: 24px;
-  font-weight: 1000;
-}
-
-.star-track {
-  height: 18px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #e7edf7;
-}
-
-.star-fill {
-  width: 0%;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #ffd166, #ff8fab);
-  transition: width 0.35s ease;
-}
-
-/* =========================
-  교사용 영역
-========================= */
-
-.teacher-grid {
-  display: grid;
-  grid-template-columns: 390px 1fr;
-  gap: 20px;
-}
-
-.teacher-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.teacher-form h3 {
-  margin: 0 0 8px;
-  font-size: 24px;
-}
-
-.teacher-form label {
-  font-weight: 900;
-}
-
-.teacher-form input {
-  min-height: 50px;
-  padding: 12px;
-  border: 2px solid var(--border);
-  border-radius: 18px;
-}
-
-.preview-box {
-  display: grid;
-  gap: 8px;
-  margin-top: 8px;
+.cart-info .unit-price {
+  margin-top: 2px;
   color: var(--muted);
   font-weight: 800;
 }
 
-.preview-box img {
-  width: 100%;
-  height: 190px;
-  border: 2px dashed var(--border);
-  border-radius: 20px;
-  object-fit: cover;
-  background: #fbfdff;
-}
-
-.form-actions {
+.quantity-row {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
   margin-top: 10px;
 }
 
-.teacher-product-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
-  gap: 14px;
-  margin-top: 14px;
+.round-button {
+  width: 48px;
+  min-width: 48px;
+  padding: 0;
+  color: #ffffff;
+  background: var(--brand);
+  border-color: var(--brand-dark);
+  font-size: 1.4rem;
 }
 
-.teacher-product-card {
-  display: grid;
-  grid-template-columns: 76px 1fr;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  background: white;
+.qty-number {
+  min-width: 72px;
+  padding: 8px 10px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: #fffdf5;
+  font-size: 1.2rem;
+  font-weight: 900;
+  text-align: center;
 }
 
-.teacher-product-card img {
-  width: 76px;
-  height: 76px;
-  border-radius: 18px;
+.remove-button {
+  padding-inline: 14px;
+}
+
+.line-total {
+  margin-top: 10px !important;
+  color: var(--brand-dark);
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.count-pictures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 9px;
+}
+
+.count-pictures img {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
   object-fit: cover;
+  background: #ffffff;
 }
 
-.teacher-product-card h4 {
-  margin: 0 0 4px;
-  font-size: 20px;
+.more-count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--brand-dark);
+  background: var(--brand-soft);
+  font-size: 0.86rem;
+  font-weight: 900;
 }
 
-.teacher-product-card p {
+.calculation-card {
+  margin-top: 18px;
+  padding: 18px;
+  border: 2px solid #b9cdfa;
+  border-radius: var(--radius-lg);
+  background: var(--brand-soft);
+}
+
+.calculation-card h2 {
+  margin: 0 0 12px;
+  font-size: 1.55rem;
+  letter-spacing: -0.03em;
+}
+
+.calculation-list {
+  display: grid;
+  gap: 10px;
   margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.calc-line {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  border: 2px solid #d2e0ff;
+  border-radius: var(--radius-md);
+  background: #ffffff;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--brand);
+  font-weight: 900;
+}
+
+.calc-name {
+  display: block;
+  font-weight: 900;
+}
+
+.calc-math {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: 1.12rem;
+  font-weight: 800;
+}
+
+.sum-formula {
+  margin-top: 12px;
+  padding: 14px;
+  border: 2px solid #ffd36a;
+  border-radius: var(--radius-md);
+  background: #fff9e8;
+  color: #4d3500;
+  font-size: 1.08rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.total-box {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--success), #096335);
+  text-align: center;
+}
+
+.total-label {
+  display: block;
+  font-weight: 800;
+}
+
+.total-money {
+  display: block;
+  margin-top: 2px;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 1000;
+  letter-spacing: -0.04em;
+}
+
+.admin-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.admin-intro h2,
+.admin-intro p {
+  margin: 0;
+}
+
+.admin-intro h2 {
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+  letter-spacing: -0.03em;
+}
+
+.admin-intro p:last-child {
+  margin-top: 8px;
   color: var(--muted);
 }
 
-.teacher-card-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 10px;
+.admin-form {
+  margin-bottom: 18px;
 }
 
-/* =========================
-  칭찬 애니메이션
-========================= */
+.admin-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
 
-.confetti-layer {
+.form-field {
+  display: grid;
+  gap: 6px;
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.form-field input {
+  width: 100%;
+  min-height: 50px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  color: var(--ink);
+  background: #ffffff;
+}
+
+.help-text {
+  margin: 12px 0 16px;
+}
+
+.admin-list {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-card {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+}
+
+.admin-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 22px;
+  object-fit: cover;
+  background: #f6f8ff;
+}
+
+.admin-card-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-card-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+#feedbackToast {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  z-index: 30;
+  max-width: min(92vw, 560px);
+  padding: 16px 20px;
+  border: 3px solid #ffd36a;
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(23, 32, 51, 0.96);
+  box-shadow: 0 16px 36px rgba(23, 32, 51, 0.28);
+  font-size: 1.08rem;
+  font-weight: 900;
+  text-align: center;
+  opacity: 0;
   pointer-events: none;
+  transform: translate(-50%, 18px) scale(0.96);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+#feedbackToast.show {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+#confettiLayer {
   position: fixed;
   inset: 0;
-  z-index: 999;
+  z-index: 20;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .confetti-piece {
   position: absolute;
-  top: -40px;
-  font-size: 28px;
-  animation: confetti-fall 1.8s ease-in forwards;
+  top: -42px;
+  font-size: 2rem;
+  animation: confetti-fall 1.45s ease-in forwards;
 }
 
 @keyframes confetti-fall {
   0% {
-    transform: translateY(-40px) rotate(0deg) scale(0.8);
+    transform: translateY(0) rotate(0deg) scale(0.75);
     opacity: 0;
   }
-
   15% {
     opacity: 1;
   }
-
   100% {
-    transform: translateY(105vh) rotate(520deg) scale(1.1);
+    transform: translateY(var(--fall-distance, 85vh)) rotate(320deg) scale(1.12);
     opacity: 0;
   }
 }
 
-.pulse {
-  animation: pulse 0.5s ease;
-}
-
-@keyframes pulse {
+@keyframes soft-pop {
   0% {
     transform: scale(1);
   }
-
   45% {
-    transform: scale(1.04);
+    transform: scale(1.035);
   }
-
   100% {
     transform: scale(1);
   }
 }
 
-/* 움직임 줄이기 설정을 한 학생에게는 애니메이션을 약하게 보여 줍니다. */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-  }
+.pop {
+  animation: soft-pop 0.28s ease;
 }
 
-/* =========================
-  아래쪽 안내
-========================= */
-
-.app-footer {
-  width: min(1480px, 100%);
-  margin: 0 auto;
-  padding: 0 24px 28px;
-  color: var(--muted);
-  line-height: 1.55;
-}
-
-/* =========================
-  반응형
-========================= */
-
-@media (max-width: 1080px) {
-  .app-header,
-  .app-layout,
-  .teacher-grid {
+@media (max-width: 980px) {
+  .student-layout {
     grid-template-columns: 1fr;
   }
 
   .cart-panel {
-    order: -1;
+    position: static;
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 760px) {
+  .app-shell {
+    width: min(100% - 18px, 1180px);
+    padding-top: 10px;
+  }
+
   .app-header,
-  .app-layout {
-    padding: 18px;
+  .mission-card,
+  .admin-intro {
+    align-items: stretch;
+    flex-direction: column;
   }
 
-  .header-text p,
-  .learning-tip p {
-    font-size: 16px;
+  .app-header,
+  .mission-card {
+    display: flex;
   }
 
-  .login-card {
-    padding: 14px;
+  .header-actions,
+  .admin-actions {
+    width: 100%;
   }
 
-  .section-heading {
+  .mode-button,
+  .primary-button,
+  .secondary-button,
+  .danger-button {
+    flex: 1 1 160px;
+  }
+
+  .section-title-row {
+    align-items: flex-start;
     flex-direction: column;
   }
 
@@ -860,34 +753,28 @@ select:focus-visible {
     grid-template-columns: 1fr;
   }
 
-  .product-image-wrap {
-    height: 220px;
+  .admin-fields,
+  .admin-card-fields {
+    grid-template-columns: 1fr;
   }
 
-  .cart-item,
-  .teacher-product-card {
-    grid-template-columns: 64px 1fr;
+  .admin-card {
+    grid-template-columns: 1fr;
   }
 
-  .cart-item img,
-  .teacher-product-card img {
-    width: 64px;
-    height: 64px;
-  }
-
-  .total-box {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .total-box strong {
-    font-size: 30px;
-  }
-
-  .primary-button,
-  .soft-button,
-  .icon-button,
-  .small-danger-button {
+  .admin-preview {
     width: 100%;
+    height: 180px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
