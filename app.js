@@ -226,7 +226,7 @@ function renderProducts() {
     const badge = document.createElement("div");
     badge.className = "cart-badge";
     const currentQuantity = cart[product.id] || 0;
-    badge.textContent = currentQuantity > 0 ? `담은 수: ${currentQuantity}` : "아직 0개";
+    badge.textContent = currentQuantity > 0 ? `담은 수: ${currentQuantity}` : "0개";
 
     imageWrap.append(image, badge);
 
