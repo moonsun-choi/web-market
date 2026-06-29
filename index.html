@@ -3,231 +3,162 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>반짝반짝 우리 반 마켓</title>
-
-  <!-- 화면 디자인 파일 연결 -->
+  <title>차근차근 마켓 계산 연습</title>
   <link rel="stylesheet" href="style.css" />
-
-  <!--
-    Google Identity Services 공식 클라이언트 라이브러리입니다.
-    GOOGLE_CLIENT_ID를 설정해야 실제 Google 로그인 버튼이 동작합니다.
-  -->
-  <script src="https://accounts.google.com/gsi/client?hl=ko" async defer></script>
+  <script src="app.js" defer></script>
 </head>
-
 <body>
-  <!-- 칭찬 애니메이션이 나타나는 공간 -->
-  <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
-
-  <!-- 화면 읽기 프로그램용 안내 영역 -->
-  <div id="liveMessage" class="sr-only" aria-live="polite"></div>
-
-  <header class="app-header">
-    <div class="header-text">
-      <p class="eyebrow">쉽고 재미있는 가격 계산</p>
-      <h1>반짝반짝 우리 반 마켓</h1>
-      <p>
-        물건을 고르고, 수량을 세고, 가격을 차근차근 계산해 봐요.
-      </p>
-    </div>
-
-    <section class="login-card" aria-label="로그인 영역">
-      <div id="userBadge" class="user-badge">
-        <span class="avatar">🙂</span>
-        <div>
-          <strong id="userNameText">학생 체험 중</strong>
-          <small id="userRoleText">학생 화면</small>
-        </div>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="header-copy">
+        <p class="eyebrow">돈 계산 연습</p>
+        <h1>🛒 차근차근 마켓</h1>
+        <p>물건을 담고, 한 개 가격과 개수를 곱한 뒤, 모두 더해 보아요.</p>
       </div>
 
-      <div id="googleButtonArea" class="google-button-area">
-        <!-- JavaScript가 Google 로그인 버튼을 여기에 그립니다. -->
-      </div>
-
-      <p id="googleHelpText" class="tiny-help">
-        Google Client ID를 넣으면 구글 로그인 버튼이 나타납니다.
-      </p>
-
-      <div class="login-actions">
-        <button id="demoStudentBtn" class="soft-button" type="button">
-          👧 학생으로 체험
+      <div class="header-actions" aria-label="화면과 소리 설정">
+        <button id="studentModeButton" class="mode-button active" type="button" aria-pressed="true">
+          학생 화면
         </button>
-        <button id="demoTeacherBtn" class="soft-button" type="button">
-          👩‍🏫 교사로 체험
+        <button id="adminModeButton" class="mode-button" type="button" aria-pressed="false">
+          교사용 관리
         </button>
-        <button id="signOutBtn" class="soft-button hidden" type="button">
-          나가기
+        <button id="soundButton" class="mode-button" type="button" aria-pressed="true">
+          🔊 소리 켜짐
         </button>
       </div>
-    </section>
-  </header>
+    </header>
 
-  <main class="app-layout">
-    <!-- =========================
-      학생 학습 영역
-    ========================== -->
-    <section class="student-panel">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">1단계</p>
-          <h2>사고 싶은 물건을 골라요</h2>
-        </div>
-
-        <button id="soundToggleBtn" class="icon-button" type="button" aria-pressed="true">
-          🔊 효과음 켜짐
-        </button>
-      </div>
-
-      <div class="learning-tip">
-        <span aria-hidden="true">💡</span>
-        <p>
-          먼저 물건을 고르고, 몇 개인지 세어 보세요.
-          그다음 <strong>1개 가격 × 개수</strong>를 계산하면 돼요.
-        </p>
-      </div>
-
-      <div id="productGrid" class="product-grid">
-        <!-- JavaScript가 상품 카드를 넣습니다. -->
-      </div>
-    </section>
-
-    <!-- =========================
-      장바구니 영역
-    ========================== -->
-    <aside class="cart-panel">
-      <section class="card">
-        <div class="section-heading">
+    <main>
+      <section id="studentPanel" aria-labelledby="studentTitle">
+        <section class="mission-card" aria-labelledby="studentTitle">
           <div>
-            <p class="eyebrow">2단계</p>
-            <h2>장바구니</h2>
+            <p class="eyebrow">오늘의 미션</p>
+            <h2 id="studentTitle">장바구니 값을 천천히 계산해요</h2>
+            <p>
+              물건을 하나씩 담으면 계산 방법이 바로 보여요.
+              틀려도 괜찮아요. 다시 눌러 보며 연습하면 돼요!
+            </p>
           </div>
 
-          <button id="clearCartBtn" class="small-danger-button" type="button">
-            비우기
-          </button>
-        </div>
-
-        <div id="cartItems" class="cart-items">
-          <!-- JavaScript가 장바구니 내용을 넣습니다. -->
-        </div>
-
-        <label class="coupon-box" for="couponRate">
-          <span>🎟️ 쿠폰 할인</span>
-          <select id="couponRate">
-            <option value="0">할인 없음</option>
-            <option value="5">5% 할인</option>
-            <option value="10">10% 할인</option>
-            <option value="20">20% 할인</option>
-          </select>
-        </label>
-
-        <div class="total-box">
-          <span>내야 할 돈</span>
-          <strong id="cartTotal">0원</strong>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">3단계</p>
-            <h2>계산을 눈으로 봐요</h2>
-          </div>
-        </div>
-
-        <div id="calcSteps" class="calc-steps">
-          <!-- JavaScript가 계산 단계를 넣습니다. -->
-        </div>
-      </section>
-
-      <section class="card reward-card">
-        <p class="eyebrow">칭찬 별</p>
-        <h2>오늘의 반짝 별</h2>
-        <p>계산을 맞히거나 물건을 잘 담으면 별을 모아요.</p>
-
-        <div class="star-meter" aria-label="칭찬 별 개수">
-          <span id="starText">⭐ 0개</span>
-          <div class="star-track">
-            <div id="starFill" class="star-fill"></div>
-          </div>
-        </div>
-      </section>
-    </aside>
-
-    <!-- =========================
-      교사용 관리자 영역
-    ========================== -->
-    <section id="teacherPanel" class="teacher-panel hidden" aria-label="교사용 관리자">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">교사용 관리</p>
-          <h2>마켓 물건을 바꿀 수 있어요</h2>
-          <p class="muted">
-            이름, 가격, 할인율, 사진을 수정하면 이 브라우저의 마켓에 바로 반영됩니다.
-          </p>
-        </div>
-
-        <button id="resetProductsBtn" class="small-danger-button" type="button">
-          기본 상품으로 되돌리기
-        </button>
-      </div>
-
-      <div class="teacher-grid">
-        <form id="teacherForm" class="card teacher-form">
-          <input type="hidden" id="editingProductId" />
-
-          <h3 id="teacherFormTitle">새 물건 추가하기</h3>
-
-          <label for="productName">물건 이름</label>
-          <input id="productName" type="text" placeholder="예: 바나나" required />
-
-          <label for="productPrice">1개 가격</label>
-          <input id="productPrice" type="number" min="0" step="100" placeholder="예: 1200" required />
-
-          <label for="productDiscount">물건 할인율</label>
-          <input id="productDiscount" type="number" min="0" max="100" step="1" value="0" />
-
-          <label for="productEmoji">간단한 그림 아이콘</label>
-          <input id="productEmoji" type="text" maxlength="4" placeholder="예: 🍌" />
-
-          <label for="productImageUrl">사진 주소</label>
-          <input id="productImageUrl" type="url" placeholder="https://..." />
-
-          <label for="productImageFile">내 컴퓨터에서 사진 선택</label>
-          <input id="productImageFile" type="file" accept="image/*" />
-
-          <div class="preview-box">
-            <span>사진 미리보기</span>
-            <img id="imagePreview" alt="선택한 상품 사진 미리보기" />
-          </div>
-
-          <div class="form-actions">
-            <button class="primary-button" type="submit">저장하기</button>
-            <button id="clearTeacherFormBtn" class="soft-button" type="button">
-              입력 칸 비우기
-            </button>
-          </div>
-        </form>
-
-        <section class="card">
-          <h3>현재 등록된 물건</h3>
-          <div id="teacherProductList" class="teacher-product-list">
-            <!-- JavaScript가 교사용 상품 목록을 넣습니다. -->
+          <div class="mission-steps" aria-label="학습 순서">
+            <span class="step-chip">1. 고르기</span>
+            <span class="step-chip">2. 개수 보기</span>
+            <span class="step-chip">3. 곱하기</span>
+            <span class="step-chip">4. 모두 더하기</span>
           </div>
         </section>
-      </div>
-    </section>
-  </main>
 
-  <footer class="app-footer">
-    <p>
-      이 예제는 수업용 프론트엔드 앱입니다.
-      실제 학교 계정 권한 관리와 여러 기기 동기화가 필요하면 서버 또는 Firebase 같은 백엔드 저장소를 연결해야 합니다.
-    </p>
-  </footer>
+        <div class="student-layout">
+          <section class="panel" aria-labelledby="marketTitle">
+            <div class="section-title-row">
+              <div>
+                <p class="eyebrow">1단계</p>
+                <h2 id="marketTitle">물건을 골라요</h2>
+              </div>
+              <p class="small-guide">큰 그림을 보고 눌러 보세요.</p>
+            </div>
+            <div id="productGrid" class="product-grid" aria-live="polite"></div>
+          </section>
 
-  <!-- 동작 파일 연결 -->
-  <script src="script.js"></script>
+          <section class="panel cart-panel" aria-labelledby="cartTitle">
+            <div class="section-title-row">
+              <div>
+                <p class="eyebrow">2단계</p>
+                <h2 id="cartTitle">장바구니</h2>
+              </div>
+              <button id="resetCartButton" class="secondary-button" type="button">
+                장바구니 비우기
+              </button>
+            </div>
+
+            <div id="cartList" class="cart-list" aria-live="polite"></div>
+
+            <section class="calculation-card" aria-labelledby="calculationTitle">
+              <p class="eyebrow">3단계</p>
+              <h2 id="calculationTitle">계산 과정을 봐요</h2>
+              <div id="calculationSteps" class="calculation-steps"></div>
+              <div id="totalBox" class="total-box" aria-live="polite"></div>
+              <button id="celebrateButton" class="primary-button wide-button" type="button">
+                🎉 계산 끝! 칭찬 받기
+              </button>
+            </section>
+          </section>
+        </div>
+      </section>
+
+      <section id="adminPanel" hidden aria-labelledby="adminTitle">
+        <section class="admin-intro panel">
+          <div>
+            <p class="eyebrow">교사용</p>
+            <h2 id="adminTitle">마켓 물건 관리</h2>
+            <p>
+              물건 이름, 가격, 사진을 바꿀 수 있어요.
+              저장한 내용은 이 기기의 브라우저에 남아요.
+            </p>
+          </div>
+
+          <div class="admin-actions">
+            <button id="resetProductsButton" class="secondary-button" type="button">
+              기본 물건으로 되돌리기
+            </button>
+            <button id="clearAllButton" class="danger-button" type="button">
+              저장 데이터 모두 지우기
+            </button>
+          </div>
+        </section>
+
+        <form id="addProductForm" class="panel admin-form">
+          <div class="section-title-row">
+            <div>
+              <p class="eyebrow">새 물건</p>
+              <h2>물건 추가하기</h2>
+            </div>
+          </div>
+
+          <div class="admin-fields">
+            <label class="form-field">
+              <span>물건 이름</span>
+              <input id="addNameInput" type="text" maxlength="30" placeholder="예: 우유" required />
+            </label>
+
+            <label class="form-field">
+              <span>가격</span>
+              <input id="addPriceInput" type="number" min="0" step="10" placeholder="예: 1500" required />
+            </label>
+
+            <label class="form-field">
+              <span>사진 주소</span>
+              <input id="addImageUrlInput" type="url" placeholder="https://..." />
+            </label>
+
+            <label class="form-field">
+              <span>사진 파일</span>
+              <input id="addImageFileInput" type="file" accept="image/*" />
+            </label>
+          </div>
+
+          <p class="help-text">
+            사진 파일을 넣으면 자동으로 작게 줄여 저장해요. 사진 주소와 파일을 둘 다 넣으면 파일을 우선 사용해요.
+          </p>
+
+          <button class="primary-button" type="submit">새 물건 추가</button>
+        </form>
+
+        <section class="panel" aria-labelledby="adminListTitle">
+          <div class="section-title-row">
+            <div>
+              <p class="eyebrow">수정</p>
+              <h2 id="adminListTitle">현재 물건 목록</h2>
+            </div>
+          </div>
+          <div id="adminList" class="admin-list"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div id="feedbackToast" role="status" aria-live="polite"></div>
+  <div id="confettiLayer" aria-hidden="true"></div>
 </body>
 </html>
