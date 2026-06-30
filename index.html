@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>물건끼리 더하기 빼기</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">가격 계산</p>
+        <h1>🧺 물건끼리 계산</h1>
+      </div>
+
+      <div class="header-buttons" aria-label="화면 설정">
+        <button id="studentModeButton" class="top-button active" type="button" aria-pressed="true">학생</button>
+        <button id="adminModeButton" class="top-button" type="button" aria-pressed="false">교사</button>
+        <button id="soundButton" class="top-button" type="button" aria-pressed="true">🔊</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="studentPanel" aria-labelledby="studentTitle">
+        <h2 id="studentTitle" class="sr-only">학생 계산 화면</h2>
+
+        <section class="step-strip" aria-label="활동 순서">
+          <div class="step-chip"><span>1</span> 물건</div>
+          <div class="step-chip"><span>2</span> + 또는 −</div>
+          <div class="step-chip"><span>3</span> 물건</div>
+          <div class="step-chip"><span>4</span> 답</div>
+        </section>
+
+        <div class="student-layout">
+          <section class="panel product-panel" aria-labelledby="productTitle">
+            <div class="panel-title-row">
+              <h2 id="productTitle">물건</h2>
+              <button id="randomButton" class="small-button" type="button">🎲</button>
+            </div>
+            <div id="productGrid" class="product-grid" aria-live="polite"></div>
+          </section>
+
+          <section class="panel play-panel" aria-labelledby="playTitle">
+            <div class="panel-title-row">
+              <h2 id="playTitle">문제</h2>
+              <button id="clearSelectionButton" class="small-button" type="button">다시</button>
+            </div>
+
+            <div class="operator-row" aria-label="더하기 또는 빼기 고르기">
+              <button class="operator-button active" type="button" data-operator="add" aria-pressed="true">+</button>
+              <button class="operator-button" type="button" data-operator="subtract" aria-pressed="false">−</button>
+            </div>
+
+            <div id="problemCard" class="problem-card" aria-live="polite"></div>
+
+            <div class="keypad" aria-label="숫자판">
+              <button type="button" data-key="1">1</button>
+              <button type="button" data-key="2">2</button>
+              <button type="button" data-key="3">3</button>
+              <button type="button" data-key="4">4</button>
+              <button type="button" data-key="5">5</button>
+              <button type="button" data-key="6">6</button>
+              <button type="button" data-key="7">7</button>
+              <button type="button" data-key="8">8</button>
+              <button type="button" data-key="9">9</button>
+              <button type="button" data-key="clear">C</button>
+              <button type="button" data-key="0">0</button>
+              <button type="button" data-key="back">⌫</button>
+            </div>
+
+            <button id="checkButton" class="check-button" type="button">확인</button>
+          </section>
+        </div>
+      </section>
+
+      <section id="adminPanel" hidden aria-labelledby="adminTitle">
+        <section class="panel admin-head">
+          <div>
+            <p class="eyebrow">교사용</p>
+            <h2 id="adminTitle">물건 관리</h2>
+          </div>
+          <div class="admin-actions">
+            <button id="resetProductsButton" class="small-button" type="button">기본값</button>
+            <button id="clearAllButton" class="danger-button" type="button">전체 삭제</button>
+          </div>
+        </section>
+
+        <form id="addProductForm" class="panel admin-form">
+          <h2>새 물건</h2>
+          <div class="admin-fields">
+            <label>
+              <span>이름</span>
+              <input id="addNameInput" type="text" maxlength="30" placeholder="예: 사과" required />
+            </label>
+            <label>
+              <span>가격</span>
+              <input id="addPriceInput" type="number" min="0" step="10" placeholder="예: 500" required />
+            </label>
+            <label>
+              <span>사진 주소</span>
+              <input id="addImageUrlInput" type="url" placeholder="https://..." />
+            </label>
+            <label>
+              <span>사진 파일</span>
+              <input id="addImageFileInput" type="file" accept="image/*" />
+            </label>
+          </div>
+          <button class="check-button form-button" type="submit">추가</button>
+        </form>
+
+        <section class="panel">
+          <h2>목록</h2>
+          <div id="adminList" class="admin-list"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div id="feedbackToast" role="status" aria-live="polite"></div>
+  <div id="confettiLayer" aria-hidden="true"></div>
+</body>
+</html>
