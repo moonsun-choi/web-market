@@ -34,6 +34,7 @@ let products = [];
 let cart = {};
 let soundOn = true;
 let pendingProblem = null;
+let problemQueue = [];
 let answerInput = "";
 let feedbackTimer = null;
 let audioContext = null;
@@ -109,6 +110,7 @@ function bindEvents() {
 
   ui.cancelProblemButton.addEventListener("click", () => {
     pendingProblem = null;
+    problemQueue = [];
     answerInput = "";
     renderAll();
     showFeedback("취소했어요");
@@ -118,6 +120,7 @@ function bindEvents() {
   ui.resetCartButton.addEventListener("click", () => {
     cart = {};
     pendingProblem = null;
+    problemQueue = [];
     answerInput = "";
     saveJson(STORAGE_KEYS.cart, cart);
     renderAll();
@@ -145,6 +148,7 @@ function bindEvents() {
     products = cloneDefaultProducts();
     cart = {};
     pendingProblem = null;
+    problemQueue = [];
     answerInput = "";
     saveJson(STORAGE_KEYS.products, products);
     saveJson(STORAGE_KEYS.cart, cart);
@@ -164,6 +168,7 @@ function bindEvents() {
     products = cloneDefaultProducts();
     cart = {};
     pendingProblem = null;
+    problemQueue = [];
     answerInput = "";
     soundOn = true;
     updateSoundButton();
@@ -241,7 +246,7 @@ function renderProducts() {
     button.type = "button";
     button.dataset.action = "start-add";
     button.dataset.id = product.id;
-    button.disabled = Boolean(pendingProblem);
+    button.disabled = false;
     button.textContent = "➕ 담기";
     button.setAttribute("aria-label", `${product.name} 담기 문제 시작`);
 
@@ -371,7 +376,7 @@ function renderCart() {
     minusButton.type = "button";
     minusButton.dataset.action = "start-remove";
     minusButton.dataset.id = item.product.id;
-    minusButton.disabled = Boolean(pendingProblem);
+    minusButton.disabled = false;
     minusButton.textContent = "➖ 빼기";
     minusButton.setAttribute("aria-label", `${item.product.name} 빼기 문제 시작`);
 
@@ -451,43 +456,64 @@ function renderAdminList() {
 }
 
 function startAddProblem(id) {
-  if (pendingProblem) {
-    showFeedback("먼저 문제 풀기");
-    return;
-  }
-
-  const product = findProduct(id);
-  if (!product) return;
-
-  pendingProblem = {
-    type: "add",
-    productId: id,
-    before: getCartTotal(),
-    price: product.price,
-    answer: getCartTotal() + product.price
-  };
-  answerInput = "";
-  renderAll();
-  playTone("tap");
+  enqueueProblem("add", id);
 }
 
 function startRemoveProblem(id) {
-  if (pendingProblem) {
-    showFeedback("먼저 문제 풀기");
+  enqueueProblem("remove", id);
+}
+
+function enqueueProblem(type, id) {
+  const product = findProduct(id);
+  if (!product) return;
+
+  if (type === "remove" && !cart[id]) {
+    showFeedback("뺄 물건이 없어요");
+    playTone("wrong");
     return;
   }
 
-  const product = findProduct(id);
-  if (!product || !cart[id]) return;
+  problemQueue.push({
+    type,
+    productId: id
+  });
 
-  pendingProblem = {
-    type: "remove",
-    productId: id,
-    before: getCartTotal(),
-    price: product.price,
-    answer: Math.max(0, getCartTotal() - product.price)
-  };
+  if (!pendingProblem) {
+    startNextProblem();
+    return;
+  }
+
+  showFeedback("다음 문제에 넣었어요");
+  playTone("tap");
+}
+
+function startNextProblem() {
+  pendingProblem = null;
   answerInput = "";
+
+  while (problemQueue.length > 0 && !pendingProblem) {
+    const nextAction = problemQueue.shift();
+    const product = findProduct(nextAction.productId);
+
+    if (!product) continue;
+
+    if (nextAction.type === "remove" && !cart[product.id]) {
+      continue;
+    }
+
+    const beforeTotal = getCartTotal();
+
+    pendingProblem = {
+      type: nextAction.type,
+      productId: product.id,
+      before: beforeTotal,
+      price: product.price,
+      answer: nextAction.type === "add"
+        ? beforeTotal + product.price
+        : Math.max(0, beforeTotal - product.price)
+    };
+  }
+
   renderAll();
   playTone("tap");
 }
@@ -536,22 +562,43 @@ function checkAnswer() {
     return;
   }
 
-  const product = findProduct(pendingProblem.productId);
-  if (!product) return;
+  const solvedProblem = { ...pendingProblem };
+  const product = findProduct(solvedProblem.productId);
 
-  if (pendingProblem.type === "add") {
+  if (!product) {
+    pendingProblem = null;
+    answerInput = "";
+    startNextProblem();
+    return;
+  }
+
+  if (solvedProblem.type === "add") {
     cart[product.id] = Math.min((cart[product.id] || 0) + 1, 99);
-  } else {
+  }
+
+  if (solvedProblem.type === "remove") {
     const nextQuantity = Math.max(0, (cart[product.id] || 0) - 1);
-    if (nextQuantity === 0) delete cart[product.id];
-    else cart[product.id] = nextQuantity;
+
+    if (nextQuantity === 0) {
+      delete cart[product.id];
+    } else {
+      cart[product.id] = nextQuantity;
+    }
   }
 
   saveJson(STORAGE_KEYS.cart, cart);
+
   pendingProblem = null;
   answerInput = "";
-  renderAll();
-  showFeedback("정답이에요! 👏");
+
+  if (problemQueue.length > 0) {
+    startNextProblem();
+    showFeedback("정답! 다음 물건이에요 👏");
+  } else {
+    renderAll();
+    showFeedback("정답이에요! 👏");
+  }
+
   celebrate();
 }
 
@@ -640,6 +687,7 @@ async function handleSaveProduct(id, card) {
     else if (nextImageUrl) product.image = nextImageUrl;
 
     pendingProblem = null;
+    problemQueue = [];
     answerInput = "";
 
     if (!saveJson(STORAGE_KEYS.products, products)) {
@@ -666,6 +714,7 @@ function handleDeleteProduct(id) {
   products = products.filter(item => item.id !== id);
   delete cart[id];
   pendingProblem = null;
+  problemQueue = [];
   answerInput = "";
 
   saveJson(STORAGE_KEYS.products, products);
